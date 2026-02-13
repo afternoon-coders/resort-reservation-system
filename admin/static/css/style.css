@@ -19,39 +19,29 @@ body {
 /* ========================= */
 /* NAVBAR */
 /* ========================= */
+
 .navbar {
     position: absolute;
     width: 100%;
     top: 0;
     left: 0;
     background: rgba(255,255,255,0.95);
-    padding: 20px 0; /* only top/bottom padding */
+    padding: 20px 0;
     z-index: 1000;
 }
 
-/* .nav-container {
+.nav-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0 20px;     
-} */
-
-.nav-container {
-    display: flex;
-    justify-content: space-between; /* logo left, links right */
-    align-items: center;
-    width: 100%;       /* full width */
-    padding: 0 20px;   /* horizontal spacing from edges */
-    box-sizing: border-box; /* include padding in width */
-    margin: 0px 20px;    /* center container */
 }
 
 
-/* Logo + Text */
+
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px; /* space between image and text */
+    gap: 12px;
 }
 
 /* Circle Image */
@@ -66,7 +56,6 @@ body {
 .logo-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.2; /* space between main name and subtitle */
 }
 
 /* Main title */
@@ -84,17 +73,15 @@ body {
     color: #666;
 }
 
-/* Nav links */
+
+
+
+
 .nav-links {
     list-style: none;
     display: flex;
     gap: 30px;
-    align-items: center; /* vertical align with logo */
-    margin: 0;
-    padding: 0;
-    flex-shrink: 0; /* prevent shrinking */
-    margin-left: 20px;
-    margin-right: 20px; /* space between logo and nav links */
+    align-items: center;
 }
 
 .nav-links a {
@@ -109,7 +96,6 @@ body {
 .nav-links a.active {
     color: #1a73e8;
 }
-
 
 .login-btn {
     padding: 8px 16px;

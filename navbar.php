@@ -16,7 +16,7 @@
         <!-- Navigation Links -->
         <ul class="nav-links">
             <li><a href="dashboard.php?page=home" class="<?php echo $page === 'home' ? 'active' : '' ?>">Home</a></li>
-            <li><a href="rooms.php" class="<?php echo $page === 'rooms' ? 'active' : '' ?>">Rooms</a></li>
+            <li><a href="index.php?page=rooms"> class="<?php echo $page === 'rooms' ? 'active' : '' ?>">Rooms</a></li>
             <li><a href="dashboard.php?page=amenities" class="<?php echo $page === 'amenities' ? 'active' : '' ?>">Amenities</a></li>
             <li><a href="dashboard.php?page=gallery" class="<?php echo $page === 'gallery' ? 'active' : '' ?>">Gallery</a></li>
             <li><a href="dashboard.php?page=contact" class="<?php echo $page === 'contact' ? 'active' : '' ?>">Contact</a></li>

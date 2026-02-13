@@ -6,6 +6,7 @@
 }
 
 body {
+    padding-top: 50px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -20,13 +21,13 @@ body {
 /* NAVBAR */
 /* ========================= */
 .navbar {
-    position: fixed; 
-    width: 100%;
+    position: fixed;
     top: 0;
     left: 0;
-    background: rgba(255,255,255,0.95);
+    width: 100%;
+    background: rgba(255,255,255);
     padding: 20px 0; /* only top/bottom padding */
-    z-index: 1000;
+    z-index: ;
 }
 
 .nav-container {
@@ -113,6 +114,7 @@ body {
 /* ========================= */
 /* HERO SECTION */
 /* ========================= */
+
 
 .hero {
     height: 100vh;
@@ -323,9 +325,11 @@ body {
 
 
 
+/* Main  */
 
-
-
+.main-container {
+    margin-top: ;
+}
 
 
 

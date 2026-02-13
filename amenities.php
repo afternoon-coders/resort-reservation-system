@@ -7,25 +7,6 @@
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">Luxury Resort</div>
-            <ul class="nav-links">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="rooms.php">Rooms</a></li>
-                <li><a href="amenities.php" class="active">Amenities</a></li>
-                <li><a href="contact.php">Contact</a></li>
-                <li class="auth-links">
-                    <a href="auth/login.php" id="loginBtn">Login</a>
-                    <a href="auth/register.php" id="registerBtn">Register</a>
-                    <a href="#" id="logoutBtn" style="display:none;" onclick="logout(); return false;">Logout</a>
-                </li>
-                <li class="admin-link" id="adminLink" style="display:none;">
-                    <a href="admin.php">Admin</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
 
     <section class="page-header">
         <div class="container">

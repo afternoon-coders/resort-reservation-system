@@ -7,13 +7,17 @@
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-
-    <section class="page-header">
+    
+    <section class="room_header">
         <div class="container">
-            <h1>Our Rooms</h1>
-            <p>Choose from our selection of luxury accommodations</p>
+
+            <h2 class="section-title-rooms">Our Accommodations</h2>
+            <p class="section-subtitle">From ocean-view rooms to private villas, find your perfect island retreat</p>
+
         </div>
     </section>
+
+
 
     <section class="rooms-section">
         <div class="container">
@@ -55,6 +59,9 @@
             </div>
         </div>
     </footer>
+
+
+    
 
     <script src="app.js"></script>
     <script src="rooms.js"></script>

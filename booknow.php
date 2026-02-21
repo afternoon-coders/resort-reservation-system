@@ -7,19 +7,7 @@
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-
 </head>
-
-<body>
-/* Responsive */
-@media (max-width: 900px) {
-  .booknow-container {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
-</head>
-
 <body>
 
     <div class="booknow-container">

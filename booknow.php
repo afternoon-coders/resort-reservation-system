@@ -21,24 +21,24 @@
             </div>
 
             <div class="booknow-grid-3">
-            <div>
-                <label class="booknow-label">Check-in Date</label>
-                <input type="date" class="booknow-input">
-            </div>
-            <div>
-                <label class="booknow-label">Check-out Date</label>
-                <input type="date" class="booknow-input">
-            </div>
-            <div>
-                <label class="booknow-label">Number of Guests</label>
-                <select class="booknow-select">
-                <option>Select guests</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4+</option>
-                </select>
-            </div>
+                <div>
+                    <label class="booknow-label">Check-in Date</label>
+                    <input type="date" class="booknow-input">
+                </div>
+                <div>
+                    <label class="booknow-label">Check-out Date</label>
+                    <input type="date" class="booknow-input">
+                </div>
+                <div>
+                    <label class="booknow-label">Number of Guests</label>
+                    <select class="booknow-select">
+                    <option>Select guests</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4+</option>
+                    </select>
+                </div>
             </div>
 
             <div style="margin-top:16px; max-width:260px;">

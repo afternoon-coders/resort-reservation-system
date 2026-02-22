@@ -80,6 +80,11 @@
                 </div>
 
             </div>
+            <div class=" all-amenities-btn">
+                <a href="index.php?page=amenities" class="btn-primary">
+                    All Amenities
+                </a>
+            </div>
         </div>
     </section>
     

@@ -67,22 +67,29 @@ if(isset($_GET['reset'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Content Management</title>
 <style>
-body { 
-    font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0;
-}
-.container { max-width: 1200px; margin:auto; padding:20px; }
-h1, h2, h3 { margin:0; }
-.card { background:#fff; border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.card-header { display:flex; justify-content: space-between; align-items:center; }
-.card-header button { background:none; border:none; color: #007BFF; cursor:pointer; }
-input, textarea { width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-top:4px; }
-label { font-weight:bold; }
-button.save-btn { padding:8px 16px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-button.save-btn:hover { background:#218838; }
-.tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;}
-.tabs button { padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#ddd; }
-.tabs button.active { background:#007BFF; color:#fff; }
-.message { padding:10px; background:#d1e7dd; color:#0f5132; margin-bottom:20px; border-radius:4px; }
+    body { 
+        font-family: Arial, sans-serif; 
+        background:#f5f5f5; 
+        margin:0; 
+        padding:0;
+    }
+    .container { 
+        max-width: 1200px; 
+        margin:auto; 
+        padding:20px; 
+    }
+    h1, h2, h3 { margin:0; }
+    .card { background:#fff; border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+    .card-header { display:flex; justify-content: space-between; align-items:center; }
+    .card-header button { background:none; border:none; color: #007BFF; cursor:pointer; }
+    input, textarea { width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-top:4px; }
+    label { font-weight:bold; }
+    button.save-btn { padding:8px 16px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    button.save-btn:hover { background:#218838; }
+    .tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;}
+    .tabs button { padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#ddd; }
+    .tabs button.active { background:#007BFF; color:#fff; }
+    .message { padding:10px; background:#d1e7dd; color:#0f5132; margin-bottom:20px; border-radius:4px; }
 </style>
 <script>
 function showTab(tab) {

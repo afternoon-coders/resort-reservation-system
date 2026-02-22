@@ -34,10 +34,10 @@ body {
     display: flex;
     justify-content: space-between; /* logo left, links right */
     align-items: center;
-    width: 100%;       /* full width */
-    padding: 0 20px;   /* horizontal spacing from edges */
-    box-sizing: border-box; /* include padding in width */
-    margin: 0px 20px;    /* center container */
+    width: 100%;     
+    padding: 0 20px;  
+    box-sizing: border-box; 
+    margin: 0px 20px;   
 }
 
 
@@ -391,6 +391,10 @@ body {
     line-height: 1.5;
 }
 
+.all-amenities-btn {
+    margin-top: 50px;
+}
+
 
 /* ROOMS AMENITIES */
 
@@ -606,7 +610,7 @@ body {
 
 .amenity-card-section {
     background: #FFFFFF;
-    padding: 30px 80px;
+    padding: 30px 40px;
     border-radius: 12px;
     transition: 0.3s ease;
     border: 1px solid #dfdfdf;

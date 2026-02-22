@@ -32,7 +32,9 @@ function getCurrentUser() {
 
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: ' . dirname(__DIR__) . '/auth/login.php');
+        // Redirect to web-accessible login path instead of filesystem path
+        // Use a site-root relative URL so the built-in PHP server doesn't expose filesystem paths
+        header('Location: /auth/login.php');
         exit;
     }
 }
@@ -41,6 +43,7 @@ function requireAdmin() {
     if (!isAdmin()) {
         header('HTTP/1.1 403 Forbidden');
         exit('Access denied: Admin only');
+        header('Refresh: 1.5; url=/index.php?page=home');
     }
 }
 
@@ -48,5 +51,6 @@ function requireStaff() {
     if (!isStaff() && !isAdmin()) {
         header('HTTP/1.1 403 Forbidden');
         exit('Access denied: Staff only');
+        header('Refresh: 1.5; url=/index.php?page=home');
     }
 }

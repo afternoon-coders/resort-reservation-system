@@ -47,12 +47,12 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                     <span class="username">Welcome, <?php echo htmlspecialchars($user['username'] ?? 'User'); ?></span>
                 </li>
                 <?php if (isAdmin()): ?>
-                    <li><a href="admin/dashboard.php" class="admin-btn">Admin Panel</a></li>
+                    <li><a href="/admin/dashboard.php" class="admin-btn">Admin Panel</a></li>
                 <?php endif; ?>
-                <li><a href="auth/logout.php" class="logout-btn">Logout</a></li>
+                <li><a href="/auth/logout.php" class="logout-btn">Logout</a></li>
             <?php else: ?>
                 <!-- User is not logged in -->
-                <li><a href="auth/login.php" class="login-btn">Login</a></li>
+                <li><a href="/auth/login.php" class="login-btn">Login</a></li>
             <?php endif; ?>
         </ul>
 

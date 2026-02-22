@@ -1,31 +1,5 @@
-// Hardcoded Rooms
-const rooms = [
-    {
-        name: "A Frame",
-        price: 6000,
-        image: "static/images/a_frame.jpg",
-        description: "Spacious room with breathtaking ocean views and private balcony."
-    },
-    {
-
-        name: "Cottage",
-        price: 2000,
-        image: "static/images/cottage.jpg",
-        description: "Cozy seaside cottage with stunning ocean views and relaxing atmosphere."
-    },
-    {
-        name: "Bird House",
-        price: 1500,
-        image: "static/images/birdhouse.jpg",
-        description: "Charming birdhouse cottage surrounded by trees and peaceful ocean views."
-    },
-    {
-        name: "Tree House",
-        price: 1500,
-        image: "static/images/treehouse.jpg",
-        description: "Rustic tree house retreat nestled among lush trees and fresh air."
-    }
-];
+// Rooms data is now provided by rooms.php via JSON
+// const rooms = [...] - This is now injected from PHP
 
 // Load Rooms
 function loadRooms() {
@@ -40,6 +14,7 @@ function loadRooms() {
                     <h3 class="room-title">${room.name}</h3>
                     <div class="room-price">₱${room.price} / night</div>
                     <p class="room-description">${room.description}</p>
+                    <p class="room-meta">Beds: ${room.beds} · Quantity: ${room.quantity}</p>
                     <div class="button-group">
                         <a href="#" class="book-btn">Book Now</a>
                         <a href="#" class="details-btn">View Details</a>

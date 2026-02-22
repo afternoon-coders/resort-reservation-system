@@ -3,13 +3,28 @@ CREATE DATABASE IF NOT EXISTS resort_reservation_db;
 USE resort_reservation_db;
 
 -- =========================
+-- Users (for staff, admin, and guests with accounts)
+-- =========================
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    role ENUM('admin', 'staff', 'guest') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
 -- Guests
 -- =========================
 CREATE TABLE guests (
     guest_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    phone VARCHAR(20)
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
 -- =========================
@@ -17,7 +32,7 @@ CREATE TABLE guests (
 -- =========================
 CREATE TABLE rooms (
     room_id INT AUTO_INCREMENT PRIMARY KEY,
-    room_number VARCHAR(10) x NOT NULL,
+    room_number VARCHAR(10) NOT NULL,
     room_type VARCHAR(50) NOT NULL,
     price_per_night DECIMAL(10,2) NOT NULL,
     status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available'
@@ -68,3 +83,5 @@ CREATE TABLE reservation_services (
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id),
     FOREIGN KEY (service_id) REFERENCES services(service_id)
 );
+
+

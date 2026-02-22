@@ -112,11 +112,11 @@ body {
 }
 
 /* ========================= */
-/* HERO SECTION */
+/* home-btn SECTION */
 /* ========================= */
 
 
-.hero {
+.home-btn {
     height: 100vh;
     background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
                 url('../images/lapaseo_bar.jpg') center/cover no-repeat;
@@ -128,45 +128,35 @@ body {
     padding: 0 20px;
 }
 
-.hero-content {
+
+.home-btn-content {
     max-width: 800px;
 }
 
-.hero-content h1 {
+.home-btn-content h1 {
     font-size: 64px;
     font-weight: 700;
     margin-bottom: 20px;
 }
 
-.hero-content p {
+.home-btn-content p {
     font-size: 18px;
     margin-bottom: 40px;
     line-height: 1.6;
     color: rgba(255,255,255,0.9);
 }
 
+
 /* BUTTONS */
 
-.hero-buttons {
+.home-btn-buttons {
     display: flex;
     justify-content: center;
+    align-items: center;
+    text-align: center;
     gap: 20px;
-    flex-wrap: wrap;
 }
 
-.btn-primary {
-    padding: 14px 28px;
-    background: #1a73e8;
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.3s;
-}
-
-.btn-primary:hover {
-    background: #0d5bd3;
-}
 
 .btn-outline {
     padding: 14px 28px;
@@ -215,11 +205,68 @@ body {
 
 
 
+
+
+
+
+/* ROOMS */
+
+
+/* ================= ROOMS GRID ================= */
+
+.rooms-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+/* Room Card */
+.room-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+
+.room-card:hover {
+    transform: translateY(-8px);
+}
+
+.room-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.room-content {
+    padding: 30px;
+}
+
+.room-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.room-price {
+    font-size: 18px;
+    color: #1A8FB5  ;
+    margin-bottom: 10px;
+}
+
+.room-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+
 .amenities {
     padding: 80px 0;
     background: #F4EEE0;
     text-align: center;
 }
+
 
 .section-title {
     font-size: 36px;
@@ -227,57 +274,17 @@ body {
     color: #000000;
 }
 
-.section-subtitle {
-    color: #666;
-    margin-bottom: 50px;
+.rooms-section {
+    margin-top: 80px;
+    margin-bottom: 80px;
 }
-
-.amenities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 2fr));
-    gap: 30px;
-}
-
-.amenity-card {
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 12px;
-    transition: 0.3s ease;
-}
-
-.amenity-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.amenity-card i {
-    font-size: 40px;
-    color: #2c7da0;
-    margin-bottom: 20px;
-}
-
-.amenity-card h3 {
-    margin-bottom: 10px;
-    font-size: 20px;
-}
-
-.amenity-card p {
-    color: #666;
-    font-size: 15px;
-}
-
-
-
-
-
-
-/* CSS for Rooms */
 
 .rooms-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* 🔥 2 per row */
     gap: 30px;
     padding: 40px;
+    margin-bottom: 20px;
 }
 
 .room-card {
@@ -324,17 +331,141 @@ body {
 }
 
 
+/* AMENITIES */
+
+.amenities {
+    padding: 80px 0;
+    background: #F4EEE0;
+    text-align: center;
+}
+
+.amenities-container {
+    max-width: 95%;
+    margin: auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    font-size: 36px;
+    margin-bottom: 10px;
+    color: #000000;
+}
+
+.section-subtitle {
+    color: #666;
+    margin-bottom: 50px;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 2fr));
+    gap: 30px;
+}
+
+.amenity-card {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    transition: 0.3s ease;
+}
+
+.amenity-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.amenity-card i {
+    font-size: 40px;
+    color: #2c7da0;
+    margin-bottom: 20px;
+}
+
+.amenity-card h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.amenity-card-section p {
+    color: #848d95;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+
+/* ROOMS AMENITIES */
+
+.rooms-amenities {
+    padding: 50px 0;
+    background: #F4EEE0;
+    text-align: center;
+}
+
+.rooms-amenities h3 {
+    font-size: 18px;
+}
+
+.rooms-amenities-section-title {
+    font-size: 25px;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.section-subtitle {
+    color: #666;
+    margin-bottom: 50px;
+}
+
+.rooms-amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.rooms-amenity-card {
+    background: none;
+    padding: 30px;
+    border-radius: 12px;
+    transition: 0.3s ease; 
+    
+
+    display: flex;
+    flex-direction: column;   
+    align-items: center;     
+    justify-content: center;  
+    text-align: center;
+}
+
+.rooms-amenity-card span{
+    width: 70px;
+    height: 70px;
+    background-color: rgb(9, 133, 175, 0.1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.rooms-amenity-card svg {
+    height: 35px;
+    width: 35px;
+}
 
 
 
+
+/* ROOMS */
 
 
 .room_header {
     margin-top: 5vh;
-    padding: 10px;
+    padding: 25px;
     background: #F4EEE0;
-    text-align: center;
     
+    display: flex;
+    flex-direction: column;   
+    align-items: center;      
+    justify-content: center;  
+    text-align: center;
 }
 
 .section-title-rooms {
@@ -352,6 +483,8 @@ body {
 
 
 
+
+/* Home */
 .filter-bar {
     display: flex;
     gap: 10px;
@@ -367,84 +500,37 @@ body {
 }
 
 .btn-primary {
-    padding: 10px 20px;
     background: #c19b76;
     color: white;
     border: none;
-    border-radius: 6px;
     cursor: pointer;
+    padding: 10px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
 }
 
 .btn-primary:hover {
     background: #a67c52;
 }
 
-/* ================= ROOMS GRID ================= */
-
-.rooms-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-}
-
-/* Room Card */
-.room-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.1); 
+    color: white;
+    border: 2px solid white;
+    cursor: pointer;
+    padding: 8px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
     transition: 0.3s;
 }
 
-.room-card:hover {
-    transform: translateY(-8px);
+.btn-secondary:hover {
+    background-color: white; 
+    color: black;
 }
-
-.room-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-
-.room-content {
-    padding: 20px;
-}
-
-.room-title {
-    font-size: 20px;
-    margin-bottom: 8px;
-}
-
-.room-price {
-    font-size: 18px;
-    color: #1A8FB5  ;
-    margin-bottom: 10px;
-}
-
-.room-description {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 15px;
-}
-
-/* .book-btn {
-    display: inline-block;
-    padding: 8px 15px;
-    background: #1A8FB5;
-    color: white;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.book-btn:hover {
-    background: #74bad1;
-}
- */
-
-
-
-
 
 
 
@@ -503,7 +589,7 @@ body {
 
 
 
-/* CSS for Amenities Section */
+/* AMENITIES */
 
 .amenities_section {
     padding: 80px 0;
@@ -512,20 +598,25 @@ body {
     
 }
 
-
 .amenities-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 2fr));
-    gap: 30px;
+    gap: 20px;
 }
 
 .amenity-card-section {
     background: #FFFFFF;
-    padding: 30px;
+    padding: 30px 80px;
     border-radius: 12px;
     transition: 0.3s ease;
     border: 1px solid #dfdfdf;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 10px;
 }
 
 .amenity-card-section:hover {
@@ -535,10 +626,15 @@ body {
 }
 
 .amenity-card-section i {
-    font-size: 40px;
-    color: #2c7da0;
-    margin-bottom: 20px;
-}
+    font-size: 30px;
+    color: rgb(9, 133, 175);
+    background-color: rgb(9, 133, 175, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px 30px;
+} 
+
+
 
 
 
@@ -553,7 +649,7 @@ body {
 
 @media(max-width:768px){
 
-    .hero-content h1 {
+    .home-btn-content h1 {
         font-size: 36px;
     }
 

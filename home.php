@@ -10,11 +10,14 @@
 </head>
 <body>
 
-    <section class="hero">
-        <div class="hero-content">
+    <section class="home-btn">
+        <div class="home-btn-content">
             <h1>Welcome to Paradise</h1>
             <p>Barr Month Le Paseo Isla Andis Resort is a serene island escape in Ando Island, Borongan City, Eastern Samar — where crystal-clear waters, golden sunsets, and laid-back coastal charm create the perfect getaway for relaxation and adventure.</p>
-            <a href="index.php?page=rooms" class="btn btn-primary">Book Now</a>
+            <div class="home-btn-buttons">
+                <a href="index.php?page=rooms" class="btn-primary">Book Your Stay</a>
+                <a href="index.php?page=rooms" class="btn-secondary">Explore Room</a>
+            </div>
         </div>
     </section>
 
@@ -30,6 +33,7 @@
             </div>
         </div>
     </section>
+
     <section class="amenities">
         <div class="container">
             <h2 class="section-title">Resort Amenities</h2>
@@ -78,6 +82,18 @@
             </div>
         </div>
     </section>
-
+    
+    <section class="description">
+        <div class="container">
+            <div class="section-header">
+                <h2>Ready to Experience Paradise?</h2>
+                <p class="section-subtitle">
+                    Book your dream vacation today and discover why Barr Mont Le Paseo is the ultimate island getaway.
+                </p>
+                <a href="index.php?page=rooms" class="btn btn-primary">Reserve Your Room</a>
+            </div>
+        </div>
+    </section>
+    
 </body>
 </html>

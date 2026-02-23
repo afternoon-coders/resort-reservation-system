@@ -8,113 +8,100 @@
 </head>
 <body>
 
-    <section class="page-header">
+    <section class="contact-header">
         <div class="container">
             <h1>Contact Us</h1>
-            <p>We'd love to hear from you</p>
+            <p>We'd love to hear from you. Get in touch with our team.</p>
         </div>
     </section>
 
-    <section class="contact-section">
-        <div class="container">
-            <div class="contact-container">
-                <div class="contact-form">
-                    <h2>Send us a Message</h2>
-                    <form id="contactForm">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" required class="form-input">
-                        </div>
+    <div class="contact-wrapper">
+        <div class="info-section">
+            <h2>Get In Touch</h2>
+            <p>
+                Whether you have a question about reservations, amenities, or anything
+                else, our team is ready to answer all your questions.
+            </p>
 
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="tel" id="phone" name="phone" class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="subject">Subject</label>
-                            <input type="text" id="subject" name="subject" required class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" required class="form-input" rows="6"></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Send Message</button>
-                    </form>
-
-                    <div id="contactMessage" class="success-message" style="display:none;"></div>
+            <div class="info-card">
+                <div class="icon">
+                    <img src="static/icons/location.svg" alt="Location icon">
                 </div>
+                <div class="info-text">
+                    <h4>Location</h4>
+                    <span>Barr Mont Le Paseo Island Resort</span>
+                    <span>Paseo Island, Pacific Ocean</span>
+                </div>
+            </div>
 
-                <div class="contact-info">
-                    <h2>Get In Touch</h2>
+            <div class="info-card">
+                <div class="icon">
+                    <img src="static/icons/call.svg" alt="Location icon">
+                </div>
+                <div class="info-text">
+                    <h4>Phone</h4>
+                    <span>Reservations: +1 (555) 123-4567</span>
+                    <span>Front Desk: +1 (555) 123-4568</span>
+                </div>
+            </div>
 
-                    <div class="info-block">
-                        <h4>Address</h4>
-                        <p>123 Luxury Avenue<br>Paradise Beach, CA 90210<br>United States</p>
-                    </div>
+            <div class="info-card">
+                <div class="icon">
+                    <img src="static/icons/mail.svg" alt="Location icon">
+                </div>
+                <div class="info-text">
+                    <h4>Email</h4>
+                    <span>General: info@barrmont.com</span>
+                    <span>Reservations: bookings@barrmont.com</span>
+                </div>
+            </div>
 
-                    <div class="info-block">
-                        <h4>Phone</h4>
-                        <p><a href="tel:+18008800123">+1 (800) 880-0123</a></p>
-                    </div>
-
-                    <div class="info-block">
-                        <h4>Email</h4>
-                        <p><a href="mailto:info@luxuryresort.com">info@luxuryresort.com</a></p>
-                    </div>
-
-                    <div class="info-block">
-                        <h4>Hours</h4>
-                        <p>Monday - Friday: 9:00 AM - 6:00 PM<br>
-                        Saturday - Sunday: 10:00 AM - 4:00 PM</p>
-                    </div>
-
-                    <div class="social-links">
-                        <h4>Follow Us</h4>
-                        <div class="social-icons">
-                            <a href="#" class="social-icon">f</a>
-                            <a href="#" class="social-icon">𝕏</a>
-                            <a href="#" class="social-icon">📷</a>
-                        </div>
-                    </div>
+            <div class="info-card">
+                <div class="icon">
+                    <img src="static/icons/clock.svg" alt="Location icon">
+                </div>
+                <div class="info-text">
+                    <h4>Hours</h4>
+                    <span>Front Desk: 24/7</span>
+                    <span>Reservations: 8:00 AM - 10:00 PM</span>
                 </div>
             </div>
         </div>
-    </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>About Us</h4>
-                    <p>Luxury Resort offers world-class hospitality and unforgettable experiences.</p>
+        <!-- RIGHT -->
+        <div class="form-card">
+            <h3>Send a Message</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" placeholder="John">
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="rooms.php">Rooms</a></li>
-                        <li><a href="amenities.php">Amenities</a></li>
-                        <li><a href="contact.php">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <p>Email: info@luxuryresort.com</p>
-                    <p>Phone: +1-800-RESORT</p>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" placeholder="Doe">
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Luxury Resort. All rights reserved.</p>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="john@example.com">
             </div>
+
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" placeholder="How can we help?">
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea placeholder="Tell us more about your inquiry..."></textarea>
+            </div>
+
+            <button class="btn">Send Message</button>
         </div>
-    </footer>
+    </div>
+
 
     <script src="app.js"></script>
     <script src="contact.js"></script>

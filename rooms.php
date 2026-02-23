@@ -85,8 +85,6 @@ $formattedRooms = array_map(function($room) {
         </div>
     </section>
 
-
-
     
 
     <script src="app.js"></script>

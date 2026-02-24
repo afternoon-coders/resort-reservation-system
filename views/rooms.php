@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/helpers/RoomModel.php';
+require_once 'helpers/RoomModel.php';
 
 // Fetch rooms from database
 $roomModel = new RoomModel();
@@ -95,6 +95,6 @@ $formattedRooms = array_map(function($room) {
         const rooms = <?php echo json_encode($formattedRooms); ?>;
     </script>
     
-    <script src="rooms.js"></script>
+    <script src="static/js/rooms.js"></script>
 </body>
 </html>

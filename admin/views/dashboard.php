@@ -60,7 +60,7 @@ try {
          ORDER BY r.reservation_id DESC LIMIT 8"
     )->fetchAll();
 
-    $recentUsers = $pdo->query('SELECT user_id, username, account_email FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
+    $recentUsers = $pdo->query('SELECT user_id, username, account_email, role FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
 
 } catch (Exception $e) {
     $error = $e->getMessage();
@@ -213,13 +213,14 @@ window.onload = function() {
             <div class="muted">No users found.</div>
         <?php else: ?>
             <table>
-                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($recentUsers as $u): ?>
                     <tr>
                         <td><?php echo (int)$u['user_id']; ?></td>
                         <td><?php echo htmlspecialchars($u['username']); ?></td>
                         <td><?php echo htmlspecialchars($u['account_email'] ?? $u['email'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($u['role'] ?? 'guest'); ?></td>
                         <td>
                             <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete user?');">
                                 <input type="hidden" name="action" value="delete_user">

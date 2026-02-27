@@ -39,8 +39,8 @@ try {
     }
 
     $hash = password_hash($password, PASSWORD_BCRYPT);
-    $ins = $pdo->prepare('INSERT INTO Users (username, password_hash, account_email) VALUES (:u, :p, :e)');
-    $ins->execute([':u' => $username, ':p' => $hash, ':e' => $email]);
+    $ins = $pdo->prepare('INSERT INTO Users (username, password_hash, account_email, role) VALUES (:u, :p, :e, :r)');
+    $ins->execute([':u' => $username, ':p' => $hash, ':e' => $email, ':r' => 'admin']);
 
     $id = (int)$pdo->lastInsertId();
     echo "Admin user created successfully with id: {$id}\n";

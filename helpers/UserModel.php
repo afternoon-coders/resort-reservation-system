@@ -9,12 +9,13 @@ class UserModel extends BaseModel
 
     public function create(array $data)
     {
-        $sql = "INSERT INTO {$this->table} (username, password_hash, account_email) VALUES (:username, :password_hash, :account_email)";
+        $sql = "INSERT INTO {$this->table} (username, password_hash, account_email, role) VALUES (:username, :password_hash, :account_email, :role)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':username' => $data['username'] ?? null,
             ':password_hash' => password_hash($data['password'] ?? '', PASSWORD_BCRYPT),
             ':account_email' => $data['email'] ?? null,
+            ':role' => $data['role'] ?? 'guest',
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -50,7 +51,10 @@ class UserModel extends BaseModel
 
         $params = [];
         
-        // role column removed in new schema — no filtering here
+        if (!empty($opts['role'])) {
+            $sql .= " WHERE role = :role";
+            $params[':role'] = $opts['role'];
+        }
 
         if (!empty($opts['limit'])) {
             $sql .= (strpos($sql, 'WHERE') ? ' ' : ' ') . "LIMIT :limit";
@@ -75,6 +79,7 @@ class UserModel extends BaseModel
         if (isset($data['username'])) { $fields[] = 'username = :username'; $params[':username'] = $data['username']; }
         if (isset($data['password'])) { $fields[] = 'password_hash = :password_hash'; $params[':password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT); }
         if (isset($data['email'])) { $fields[] = 'account_email = :account_email'; $params[':account_email'] = $data['email']; }
+        if (isset($data['role'])) { $fields[] = 'role = :role'; $params[':role'] = $data['role']; }
 
         if (empty($fields)) {
             return false;

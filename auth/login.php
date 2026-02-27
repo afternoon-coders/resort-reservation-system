@@ -21,16 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $userModel = new UserModel();
         
-        // Find user by email
+        // Find user by account email
         $user = $userModel->getByEmail($email);
-        
-        if ($user && $userModel->verifyPassword($password, $user['password'])) {
+
+        if ($user && $userModel->verifyPassword($password, $user['password_hash'])) {
             // Login successful
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-            
+            $_SESSION['email'] = $user['account_email'] ?? $user['email'] ?? null;
+            $_SESSION['role'] = $user['role'] ?? 'guest';
+
             header('Location: ../index.php');
             exit;
         } else {

@@ -23,7 +23,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
 
         <!-- Logo + Text -->
         <div class="logo">
-            <img src="static/images/lapaseo_logo.jpg" alt="Logo" class="logo-img">
+            <img src="\static\images\lepaseo_logo.jpg" alt="Logo" class="logo-img">
             <div class="logo-text">
                 <h2 class="main-name">Barr Mont Le Paseo Isla Andis Resort</h2>
                 <p class="sub-name">Island Resort</p>

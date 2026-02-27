@@ -783,9 +783,75 @@ body {
 }
 
 
+<<<<<<< HEAD
 /* ======================== */
 /* ===== CONTACTS PAGE ==== */
 /* ======================== */
+=======
+/* CSS for Gallery */
+
+.gallery {
+    display: flex;
+    gap: 20px;
+    padding: 40px 50px;
+}
+
+.gallery-left {
+    flex: 2;
+    position: relative;
+}
+
+.gallery-left img {
+    width: 100%;
+    border-radius: 15px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.gallery-right img {
+    width: 100%;
+    border-radius: 15px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.caption {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.gallery-right .caption {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.gallery-item {
+    position: relative;
+    flex: 1;
+}
+
+
+
+
+>>>>>>> 2c14c1a12fa51531cbe67e3e9edc66107339ee90
 
 
 .contact-header {

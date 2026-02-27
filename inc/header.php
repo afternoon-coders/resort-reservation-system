@@ -14,7 +14,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -35,12 +35,12 @@ $user = $isLoggedIn ? getCurrentUser() : null;
 
         <!-- Navigation Links -->
         <ul class="nav-links">
-            <li><a href="index.php?page=home" class="<?php echo isset($page) && $page === 'home' ? 'active' : '' ?>">Home</a></li>
-            <li><a href="index.php?page=rooms" class="<?php echo isset($page) && $page === 'rooms' ? 'active' : '' ?>">Rooms</a></li>
-            <li><a href="index.php?page=amenities" class="<?php echo isset($page) && $page === 'amenities' ? 'active' : '' ?>">Amenities</a></li>
-            <li><a href="index.php?page=gallery" class="<?php echo isset($page) && $page === 'gallery' ? 'active' : '' ?>">Gallery</a></li>
-            <li><a href="index.php?page=booknow" class="<?php echo isset($page) && $page === 'booknow' ? 'active' : '' ?>">Book Now</a></li>
-            <li><a href="index.php?page=contact" class="<?php echo isset($page) && $page === 'contact' ? 'active' : '' ?>">Contact</a></li>
+            <li><a href="/index.php?page=home" class="<?php echo isset($page) && $page === 'home' ? 'active' : '' ?>">Home</a></li>
+            <li><a href="/index.php?page=rooms" class="<?php echo isset($page) && $page === 'rooms' ? 'active' : '' ?>">Rooms</a></li>
+            <li><a href="/index.php?page=amenities" class="<?php echo isset($page) && $page === 'amenities' ? 'active' : '' ?>">Amenities</a></li>
+            <li><a href="/index.php?page=gallery" class="<?php echo isset($page) && $page === 'gallery' ? 'active' : '' ?>">Gallery</a></li>
+            <li><a href="/index.php?page=booknow" class="<?php echo isset($page) && $page === 'booknow' ? 'active' : '' ?>">Book Now</a></li>
+            <li><a href="/index.php?page=contact" class="<?php echo isset($page) && $page === 'contact' ? 'active' : '' ?>">Contact</a></li>
             
             <?php if ($isLoggedIn): ?>
                 <!-- User is logged in -->
@@ -48,7 +48,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                     <span class="username">Welcome, <?php echo htmlspecialchars($user['username'] ?? 'User'); ?></span>
                 </li>
                 <?php if (isAdmin()): ?>
-                    <li><a href="/admin/dashboard.php" class="admin-btn">Admin Panel</a></li>
+                    <li><a href="/admin/index.php?page=dashboard" class="admin-btn">Admin Panel</a></li>
                 <?php endif; ?>
                 <li><a href="/auth/logout.php" class="logout-btn">Logout</a></li>
             <?php else: ?>

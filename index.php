@@ -11,7 +11,7 @@ if (!in_array($page, $allowed_pages)) {
 }
 
 // Include the page content
-include "{$page}.php";
+include __DIR__ . "/views/{$page}.php";
 
 // Include footer
 include 'inc/footer.php';

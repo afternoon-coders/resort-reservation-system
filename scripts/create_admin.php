@@ -29,8 +29,8 @@ if ($username === '' || $email === '' || $password === '') {
 try {
     $pdo = DB::getPDO();
 
-    // Check for existing username or email
-    $stmt = $pdo->prepare('SELECT user_id FROM users WHERE username = :u OR email = :e LIMIT 1');
+    // Check for existing username or account_email
+    $stmt = $pdo->prepare('SELECT user_id FROM Users WHERE username = :u OR account_email = :e LIMIT 1');
     $stmt->execute([':u' => $username, ':e' => $email]);
     $exists = $stmt->fetch();
     if ($exists) {
@@ -39,8 +39,8 @@ try {
     }
 
     $hash = password_hash($password, PASSWORD_BCRYPT);
-    $ins = $pdo->prepare('INSERT INTO users (username, password, email, role) VALUES (:u, :p, :e, :r)');
-    $ins->execute([':u' => $username, ':p' => $hash, ':e' => $email, ':r' => 'admin']);
+    $ins = $pdo->prepare('INSERT INTO Users (username, password_hash, account_email) VALUES (:u, :p, :e)');
+    $ins->execute([':u' => $username, ':p' => $hash, ':e' => $email]);
 
     $id = (int)$pdo->lastInsertId();
     echo "Admin user created successfully with id: {$id}\n";

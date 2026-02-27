@@ -4,22 +4,20 @@ require_once __DIR__ . '/BaseModel.php';
 
 class RoomModel extends BaseModel
 {
-    protected $table = 'rooms';
-    protected $primaryKey = 'room_id';
+    // Adapted to new schema: Cottages table
+    protected $table = 'Cottages';
+    protected $primaryKey = 'cottage_id';
 
     public function create(array $data)
     {
-        $roomTypeId = $this->ensureRoomType($data['room_type'] ?? ($data['room_type_id'] ?? null));
-
-        $sql = "INSERT INTO {$this->table} (room_number, room_type, price_per_night, number_of_beds, quantity, status) VALUES (:room_number, :room_type, :price_per_night, :number_of_beds, :quantity, :status)";
+        $sql = "INSERT INTO {$this->table} (cottage_number, name, base_price, max_occupancy, is_available) VALUES (:cottage_number, :name, :base_price, :max_occupancy, :is_available)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':room_number' => $data['room_number'] ?? null,
-            ':room_type' => $roomTypeId,
-            ':price_per_night' => $data['price_per_night'] ?? 0,
-            ':number_of_beds' => $data['number_of_beds'] ?? 1,
-            ':quantity' => $data['quantity'] ?? 1,
-            ':status' => $data['status'] ?? 'available',
+            ':cottage_number' => $data['room_number'] ?? $data['cottage_number'] ?? null,
+            ':name' => $data['room_type'] ?? $data['name'] ?? null,
+            ':base_price' => $data['price_per_night'] ?? $data['base_price'] ?? 0,
+            ':max_occupancy' => $data['number_of_beds'] ?? $data['max_occupancy'] ?? 1,
+            ':is_available' => isset($data['status']) ? ($data['status'] === 'available' ? 1 : 0) : 1,
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -27,7 +25,7 @@ class RoomModel extends BaseModel
 
     public function getById(int $id)
     {
-        $sql = "SELECT r.*, rt.name AS room_type FROM {$this->table} r LEFT JOIN room_types rt ON r.room_type = rt.room_type_id WHERE r.{$this->primaryKey} = :id LIMIT 1";
+        $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
@@ -35,12 +33,12 @@ class RoomModel extends BaseModel
 
     public function getAll(array $opts = [])
     {
-        $sql = "SELECT r.*, rt.name AS room_type FROM {$this->table} r LEFT JOIN room_types rt ON r.room_type = rt.room_type_id";
+        $sql = "SELECT * FROM {$this->table}";
         $params = [];
 
-        if (!empty($opts['status'])) {
-            $sql .= " WHERE r.status = :status";
-            $params[':status'] = $opts['status'];
+        if (isset($opts['status'])) {
+            $sql .= " WHERE is_available = :is_available";
+            $params[':is_available'] = $opts['status'] === 'available' ? 1 : 0;
         }
 
         if (!empty($opts['limit'])) {
@@ -49,8 +47,8 @@ class RoomModel extends BaseModel
 
         $stmt = $this->pdo->prepare($sql);
 
-        if (isset($params[':status'])) {
-            $stmt->bindValue(':status', $params[':status']);
+        if (isset($params[':is_available'])) {
+            $stmt->bindValue(':is_available', $params[':is_available'], PDO::PARAM_INT);
         }
         if (!empty($opts['limit'])) {
             $stmt->bindValue(':limit', (int)$opts['limit'], PDO::PARAM_INT);
@@ -65,16 +63,11 @@ class RoomModel extends BaseModel
         $fields = [];
         $params = [':id' => $id];
 
-        if (isset($data['room_number'])) { $fields[] = 'room_number = :room_number'; $params[':room_number'] = $data['room_number']; }
-        if (isset($data['room_type'])) {
-            $roomTypeId = $this->ensureRoomType($data['room_type']);
-            $fields[] = 'room_type = :room_type';
-            $params[':room_type'] = $roomTypeId;
-        }
-        if (isset($data['price_per_night'])) { $fields[] = 'price_per_night = :price_per_night'; $params[':price_per_night'] = $data['price_per_night']; }
-        if (isset($data['status'])) { $fields[] = 'status = :status'; $params[':status'] = $data['status']; }
-        if (isset($data['number_of_beds'])) { $fields[] = 'number_of_beds = :number_of_beds'; $params[':number_of_beds'] = $data['number_of_beds']; }
-        if (isset($data['quantity'])) { $fields[] = 'quantity = :quantity'; $params[':quantity'] = $data['quantity']; }
+        if (isset($data['room_number'])) { $fields[] = 'cottage_number = :cottage_number'; $params[':cottage_number'] = $data['room_number']; }
+        if (isset($data['room_type'])) { $fields[] = 'name = :name'; $params[':name'] = $data['room_type']; }
+        if (isset($data['price_per_night'])) { $fields[] = 'base_price = :base_price'; $params[':base_price'] = $data['price_per_night']; }
+        if (isset($data['status'])) { $fields[] = 'is_available = :is_available'; $params[':is_available'] = ($data['status'] === 'available') ? 1 : 0; }
+        if (isset($data['number_of_beds'])) { $fields[] = 'max_occupancy = :max_occupancy'; $params[':max_occupancy'] = $data['number_of_beds']; }
 
         if (empty($fields)) {
             return false;
@@ -84,46 +77,6 @@ class RoomModel extends BaseModel
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute($params);
-    }
-
-    /**
-     * Ensure we have a room_type id. Accepts an id or name; creates a default 'General' type when null.
-     */
-    private function ensureRoomType($value)
-    {
-        if (is_numeric($value) && (int)$value > 0) {
-            return (int)$value;
-        }
-
-        if (is_string($value) && trim($value) !== '') {
-            $name = trim($value);
-            $id = $this->getRoomTypeIdByName($name);
-            if ($id) return $id;
-            return $this->createRoomType($name);
-        }
-
-        // fallback default
-        $default = 'General';
-        $id = $this->getRoomTypeIdByName($default);
-        if ($id) return $id;
-        return $this->createRoomType($default);
-    }
-
-    private function getRoomTypeIdByName(string $name)
-    {
-        $sql = "SELECT room_type_id FROM room_types WHERE name = :name LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':name' => $name]);
-        $row = $stmt->fetch();
-        return $row ? (int)$row['room_type_id'] : false;
-    }
-
-    private function createRoomType(string $name, string $description = null)
-    {
-        $sql = "INSERT INTO room_types (name, description) VALUES (:name, :description)";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':name' => $name, ':description' => $description]);
-        return (int)$this->pdo->lastInsertId();
     }
 
     public function delete(int $id)

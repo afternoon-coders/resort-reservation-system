@@ -15,50 +15,52 @@ try {
         $action = $_POST['action'];
 
         if ($action === 'update_reservation_status' && !empty($_POST['reservation_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE reservations SET status = :s WHERE reservation_id = :id');
+            $stmt = $pdo->prepare('UPDATE Reservations SET status = :s WHERE reservation_id = :id');
             $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['reservation_id']]);
             $message = 'Reservation status updated.';
         }
 
         if ($action === 'delete_reservation' && !empty($_POST['reservation_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM reservations WHERE reservation_id = :id');
+            $stmt = $pdo->prepare('DELETE FROM Reservations WHERE reservation_id = :id');
             $stmt->execute([':id' => (int)$_POST['reservation_id']]);
             $message = 'Reservation deleted.';
         }
 
         if ($action === 'delete_user' && !empty($_POST['user_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM users WHERE user_id = :id');
+            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
             $stmt->execute([':id' => (int)$_POST['user_id']]);
             $message = 'User deleted.';
         }
 
         if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE rooms SET status = :s WHERE room_id = :id');
-            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
-            $message = 'Room status updated.';
+            // Map room status to is_available for Cottages
+            $isAvail = (strtolower($_POST['status']) === 'available') ? 1 : 0;
+            $stmt = $pdo->prepare('UPDATE Cottages SET is_available = :avail WHERE cottage_id = :id');
+            $stmt->execute([':avail' => $isAvail, ':id' => (int)$_POST['room_id']]);
+            $message = 'Cottage availability updated.';
         }
     }
 
     // Stats
-    $roomsTotal = (int)$pdo->query('SELECT COUNT(*) FROM rooms')->fetchColumn();
-    $roomsAvailable = (int)$pdo->query("SELECT COUNT(*) FROM rooms WHERE status = 'available'")->fetchColumn();
+    $roomsTotal = (int)$pdo->query('SELECT COUNT(*) FROM Cottages')->fetchColumn();
+    $roomsAvailable = (int)$pdo->query('SELECT COUNT(*) FROM Cottages WHERE is_available = 1')->fetchColumn();
 
-    $reservationsTotal = (int)$pdo->query('SELECT COUNT(*) FROM reservations')->fetchColumn();
-    $reservationsPending = (int)$pdo->query("SELECT COUNT(*) FROM reservations WHERE status = 'pending'")->fetchColumn();
+    $reservationsTotal = (int)$pdo->query('SELECT COUNT(*) FROM Reservations')->fetchColumn();
+    $reservationsPending = (int)$pdo->query("SELECT COUNT(*) FROM Reservations WHERE LOWER(status) = 'pending'")->fetchColumn();
 
-    $usersTotal = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+    $usersTotal = (int)$pdo->query('SELECT COUNT(*) FROM Users')->fetchColumn();
 
-    $paymentsTotal = $pdo->query('SELECT IFNULL(SUM(amount),0) FROM payments')->fetchColumn();
+    $paymentsTotal = $pdo->query('SELECT IFNULL(SUM(amount_paid),0) FROM Payments')->fetchColumn();
 
     $recentReservations = $pdo->query(
-        "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, g.name AS guest_name, rm.room_number
-         FROM reservations r
-         LEFT JOIN guests g ON r.guest_id = g.guest_id
-         LEFT JOIN rooms rm ON r.room_id = rm.room_id
+        "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, CONCAT(g.first_name, ' ', g.last_name) AS guest_name, c.cottage_number
+         FROM Reservations r
+         LEFT JOIN Guests g ON r.guest_id = g.guest_id
+         LEFT JOIN Cottages c ON r.cottage_id = c.cottage_id
          ORDER BY r.reservation_id DESC LIMIT 8"
     )->fetchAll();
 
-    $recentUsers = $pdo->query('SELECT user_id, username, email, role FROM users ORDER BY user_id DESC LIMIT 8')->fetchAll();
+    $recentUsers = $pdo->query('SELECT user_id, username, account_email FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
 
 } catch (Exception $e) {
     $error = $e->getMessage();
@@ -136,11 +138,11 @@ window.onload = function() {
     <div class="grid">
         <div class="card stat">
             <h2><?php echo $roomsTotal; ?></h2>
-            <div class="muted">Total Rooms</div>
+            <div class="muted">Total Cottages</div>
         </div>
         <div class="card stat">
             <h2><?php echo $roomsAvailable; ?></h2>
-            <div class="muted">Available Rooms</div>
+            <div class="muted">Available Cottages</div>
         </div>
         <div class="card stat">
             <h2><?php echo $reservationsTotal; ?></h2>
@@ -174,7 +176,7 @@ window.onload = function() {
                     <tr>
                         <td><?php echo htmlspecialchars($r['reservation_id']); ?></td>
                         <td><?php echo htmlspecialchars($r['guest_name'] ?? '—'); ?></td>
-                        <td><?php echo htmlspecialchars($r['room_number'] ?? '—'); ?></td>
+                        <td><?php echo htmlspecialchars($r['cottage_number'] ?? '—'); ?></td>
                         <td><?php echo htmlspecialchars($r['check_in_date']); ?></td>
                         <td><?php echo htmlspecialchars($r['check_out_date']); ?></td>
                         <td><?php echo htmlspecialchars($r['status']); ?></td>
@@ -183,10 +185,11 @@ window.onload = function() {
                                 <input type="hidden" name="action" value="update_reservation_status">
                                 <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                 <select name="status">
-                                    <option value="pending" <?php echo $r['status']==='pending' ? 'selected' : '' ?>>pending</option>
-                                    <option value="confirmed" <?php echo $r['status']==='confirmed' ? 'selected' : '' ?>>confirmed</option>
-                                    <option value="checked_in" <?php echo $r['status']==='checked_in' ? 'selected' : '' ?>>checked_in</option>
-                                    <option value="cancelled" <?php echo $r['status']==='cancelled' ? 'selected' : '' ?>>cancelled</option>
+                                    <option value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="Confirmed" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                    <option value="Checked-In" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
+                                    <option value="Checked-Out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
+                                    <option value="Cancelled" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                 </select>
                                 <button type="submit">Update</button>
                             </form>
@@ -210,14 +213,13 @@ window.onload = function() {
             <div class="muted">No users found.</div>
         <?php else: ?>
             <table>
-                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($recentUsers as $u): ?>
                     <tr>
                         <td><?php echo (int)$u['user_id']; ?></td>
                         <td><?php echo htmlspecialchars($u['username']); ?></td>
-                        <td><?php echo htmlspecialchars($u['email']); ?></td>
-                        <td><?php echo htmlspecialchars($u['role']); ?></td>
+                        <td><?php echo htmlspecialchars($u['account_email'] ?? $u['email'] ?? ''); ?></td>
                         <td>
                             <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete user?');">
                                 <input type="hidden" name="action" value="delete_user">

@@ -8,12 +8,12 @@ $dbRooms = $roomModel->getAll(['status' => 'available']);
 // Format rooms for JavaScript
 $formattedRooms = array_map(function($room) {
     return [
-        'room_id' => $room['room_id'],
-        'name' => $room['room_type'],
-        'price' => (int)$room['price_per_night'],
-        'image' => 'static/images/' . strtolower(str_replace(' ', '_', $room['room_type'])) . '.jpg',
-        'description' => 'Beautiful ' . $room['room_type'] . ' with premium amenities and stunning views.',
-        'beds' => (int)($room['number_of_beds'] ?? 0)
+        'room_id' => $room['cottage_id'] ?? $room['room_id'],
+        'name' => $room['name'] ?? $room['room_type'],
+        'price' => (int)($room['base_price'] ?? $room['price_per_night'] ?? 0),
+        'image' => 'static/images/' . strtolower(str_replace(' ', '_', $room['name'] ?? $room['room_type'] ?? 'cottage')) . '.jpg',
+        'description' => 'Beautiful ' . ($room['name'] ?? $room['room_type'] ?? 'cottage') . ' with premium amenities and stunning views.',
+        'beds' => (int)($room['max_occupancy'] ?? $room['number_of_beds'] ?? 0)
     ];
 }, $dbRooms);
 ?>

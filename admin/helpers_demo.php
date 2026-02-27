@@ -117,9 +117,9 @@ try {
                         <?php foreach ($guests as $g): ?>
                             <tr>
                                 <td><?= htmlspecialchars($g['guest_id']) ?></td>
-                                <td><?= htmlspecialchars($g['name']) ?></td>
-                                <td><?= htmlspecialchars($g['email']) ?></td>
-                                <td><?= htmlspecialchars($g['phone']) ?></td>
+                                <td><?= htmlspecialchars(($g['first_name'] ?? '') . (isset($g['last_name']) && $g['last_name'] !== '' ? ' ' . $g['last_name'] : '')) ?></td>
+                                <td><?= htmlspecialchars($g['contact_email'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($g['phone_number'] ?? '') ?></td>
                                 <td>
                                     <form method="post" style="display:inline">
                                         <input type="hidden" name="guest_id" value="<?= (int)$g['guest_id'] ?>">
@@ -160,16 +160,15 @@ try {
                     <tbody>
                         <?php foreach ($rooms as $r): ?>
                             <tr>
-                                <td><?= htmlspecialchars($r['room_id']) ?></td>
-                                <td><?= htmlspecialchars($r['room_number']) ?></td>
-                                <td><?= htmlspecialchars($r['room_type']) ?></td>
-                                <td><?= htmlspecialchars($r['price_per_night']) ?></td>
-                                <td><?= htmlspecialchars($r['number_of_beds'] ?? 0) ?></td>
-                                <td><?= htmlspecialchars($r['quantity'] ?? 0) ?></td>
-                                <td><?= htmlspecialchars($r['status']) ?></td>
+                                <td><?= htmlspecialchars($r['cottage_id'] ?? $r['room_id']) ?></td>
+                                <td><?= htmlspecialchars($r['cottage_number'] ?? $r['room_number']) ?></td>
+                                <td><?= htmlspecialchars($r['name'] ?? $r['room_type']) ?></td>
+                                <td><?= htmlspecialchars($r['base_price'] ?? $r['price_per_night']) ?></td>
+                                <td><?= htmlspecialchars($r['max_occupancy'] ?? $r['number_of_beds'] ?? 0) ?></td>
+                                <td><?= htmlspecialchars(isset($r['is_available']) ? ($r['is_available'] ? 'available' : 'occupied') : ($r['status'] ?? '')) ?></td>
                                 <td>
                                     <form method="post" style="display:inline">
-                                        <input type="hidden" name="room_id" value="<?= (int)$r['room_id'] ?>">
+                                        <input type="hidden" name="room_id" value="<?= (int)($r['cottage_id'] ?? $r['room_id']) ?>">
                                         <button type="submit" name="delete_room" onclick="return confirm('Delete room?')">Delete</button>
                                     </form>
                                 </td>

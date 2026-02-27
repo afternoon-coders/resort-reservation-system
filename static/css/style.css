@@ -34,10 +34,10 @@ body {
     display: flex;
     justify-content: space-between; /* logo left, links right */
     align-items: center;
-    width: 100%;       /* full width */
-    padding: 0 20px;   /* horizontal spacing from edges */
-    box-sizing: border-box; /* include padding in width */
-    margin: 0px 20px;    /* center container */
+    width: 100%;     
+    padding: 0 20px;  
+    box-sizing: border-box; 
+    margin: 0px 20px;   
 }
 
 
@@ -281,7 +281,7 @@ body {
 
 .rooms-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 🔥 2 per row */
+    grid-template-columns: repeat(2, 1fr);
     gap: 30px;
     padding: 40px;
     margin-bottom: 20px;
@@ -389,6 +389,18 @@ body {
     color: #848d95;
     font-size: 17px;
     line-height: 1.5;
+}
+
+.all-amenities-btn-container {
+    margin-top: 50px;
+
+}
+
+.all-amenities-btn {
+    color: #333 !important;
+    border: 2px solid #F4EEE0 !important;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+
 }
 
 
@@ -525,7 +537,9 @@ body {
     text-decoration: none;
     font-weight: 600;
     transition: 0.3s;
+
 }
+
 
 .btn-secondary:hover {
     background-color: white; 
@@ -606,7 +620,7 @@ body {
 
 .amenity-card-section {
     background: #FFFFFF;
-    padding: 30px 80px;
+    padding: 30px 40px;
     border-radius: 12px;
     transition: 0.3s ease;
     border: 1px solid #dfdfdf;
@@ -634,8 +648,128 @@ body {
     margin-bottom: 20px 30px;
 } 
 
+/* ================== */
+/* ===  BOOK NOW  === */
+/* ================== */
 
+/* Layout */
+.booknow-container {
+    max-width: 1200px;
+    margin: auto;
+    margin-top: 80px;
+    margin-bottom: 80px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
 
+/* Cards */
+.booknow-card {
+    background: #ffffff;
+    border: 1px solid #e6e0d8;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.summary-card {
+    background: #ffffff;
+    border: 1px solid #e6e0d8;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+/* Section headings */
+.booknow-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Form grids */
+.booknow-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.booknow-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Form fields */
+.booknow-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.booknow-input,
+.booknow-select,
+.booknow-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e6e0d8;
+  background: #f3efe9;
+  font-size: 14px;
+}
+
+.booknow-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Divider */
+.booknow-divider {
+  margin: 28px 0;
+  border-top: 1px solid #e6e0d8;
+}
+
+/* Button */
+.booknow-submit {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #007ea7;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.booknow-submit:hover {
+  opacity: 0.95;
+}
+
+/* Booking summary */
+.booknow-summary-text {
+  color: #6b6b6b;
+  font-size: 15px;
+  margin: 30px 0;
+}
+
+.booknow-secure {
+  border-top: 1px solid #e6e0d8;
+  padding-top: 16px;
+  color: #6b6b6b;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .booknow-container {
+    grid-template-columns: 1fr;
+  }
+}
 
 
 /* CSS for Gallery */

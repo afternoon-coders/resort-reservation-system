@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="static/css/footer.css">
+    <link rel="stylesheet" href="/static/css/footer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -27,10 +27,10 @@
             <div class="footer-col">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="#">Rooms</a></li>
-                    <li><a href="#">Amenities</a></li>
-                    <li><a href="#">Gallery</a></li>
-                    <li><a href="#">Book Now</a></li>
+                    <li><a href="/index.php?page=rooms">Rooms</a></li>
+                    <li><a href="/index.php?page=amenities">Amenities</a></li>
+                    <li><a href="/index.php?page=gallery">Gallery</a></li>
+                    <li><a href="/index.php?page=booknow">Book Now</a></li>
                 </ul>
             </div>
 

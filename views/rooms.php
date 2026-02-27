@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/helpers/RoomModel.php';
+require_once 'helpers/RoomModel.php';
 
 // Fetch rooms from database
 $roomModel = new RoomModel();
@@ -13,8 +13,7 @@ $formattedRooms = array_map(function($room) {
         'price' => (int)$room['price_per_night'],
         'image' => 'static/images/' . strtolower(str_replace(' ', '_', $room['room_type'])) . '.jpg',
         'description' => 'Beautiful ' . $room['room_type'] . ' with premium amenities and stunning views.',
-        'beds' => (int)($room['number_of_beds'] ?? 0),
-        'quantity' => (int)($room['quantity'] ?? 0)
+        'beds' => (int)($room['number_of_beds'] ?? 0)
     ];
 }, $dbRooms);
 ?>
@@ -96,6 +95,6 @@ $formattedRooms = array_map(function($room) {
         const rooms = <?php echo json_encode($formattedRooms); ?>;
     </script>
     
-    <script src="rooms.js"></script>
+    <script src="static/js/rooms.js"></script>
 </body>
 </html>

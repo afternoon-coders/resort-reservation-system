@@ -1,6 +1,6 @@
 <?php
 // Include header with navbar
-include 'inc/header.php';
+include '../inc/header.php';
 
 // Determine which page to load
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
@@ -14,5 +14,5 @@ if (!in_array($page, $allowed_pages)) {
 include "{$page}.php";
 
 // Include footer
-include 'inc/footer.php';
+include '../inc/footer.php';
 ?>

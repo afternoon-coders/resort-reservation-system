@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../auth/auth_functions.php';
-require_once __DIR__ . '/../helpers/DB.php';
+require_once '../auth/auth_functions.php';
+require_once '../helpers/DB.php';
 
 requireLogin();
 requireAdmin();

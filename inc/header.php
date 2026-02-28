@@ -79,7 +79,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                 <ul class="">
                     <li>
                         <span>🏠</span>
-                        <a href="/admin/index.php?page=dashboard">Admin Panel</a>
+                        <a href="/admin/index.php?page=dashboard">Dashboard</a>
                     </li>
                     <li>
                         <span>📅</span>

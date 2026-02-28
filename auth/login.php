@@ -31,7 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email'] = $user['account_email'] ?? $user['email'] ?? null;
             $_SESSION['role'] = $user['role'] ?? 'guest';
 
-            header('Location: ../index.php');
+            if ($_SESSION['role'] === 'admin') {
+                header('Location: ../admin/index.php');
+            } else {
+                header('Location: ../index.php');
+            }
+
             exit;
         } else {
             $error = 'Invalid email or password.';

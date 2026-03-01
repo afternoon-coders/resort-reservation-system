@@ -78,23 +78,33 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                 <p class="admin-section-title">MANAGEMENT</p>
                 <ul class="">
                     <li>
-                        <span>🏠</span>
+                        <span>
+                            <img src="/admin/static/img/dashboard.svg" alt="">
+                        </span>
                         <a href="/admin/index.php?page=dashboard">Dashboard</a>
                     </li>
                     <li>
-                        <span>📅</span>
+                        <span>
+                            <img src="/admin/static/img/reservation.svg" alt="">
+                        </span>
                         <a href="/admin/index.php?page=reservations">Reservations</a>
                     </li>
                     <li>
-                        <span>🛏</span>
+                        <span>
+                            <img src="/admin/static/img/bed.svg" alt="">
+                        </span>
                         <a href="/admin/index.php?page=rooms">Rooms</a>
                     </li>
                     <li>
-                        <span>👤</span>
+                        <span>
+                            <img src="/admin/static/img/people.svg" alt="">
+                        </span>
                         <a href="/admin/index.php?page=users">Customers</a>
                     </li>
                     <li>
-                        <span>📊</span>
+                        <span>
+                            <img src="/admin/static/img/analytics.svg" alt="">
+                        </span>
                         <a href="/admin/index.php?page=reports">Reports</a>
                     </li>
                 </ul>
@@ -103,9 +113,24 @@ $user = $isLoggedIn ? getCurrentUser() : null;
             <div class="sidebar-section">
                 <p class="admin-section-title">CONTENT</p>
                 <ul>
-                    <li><span>📄</span> Page Content</li>
-                    <li><span>🖼</span> Media Library</li>
-                    <li><span>⚙</span> Site Settings</li>
+                    <li>
+                        <span>
+                            <img src="/admin/static/img/edit_doc.svg" alt="">
+                        </span>
+                        Page Content
+                    </li>
+                    <li>
+                        <span>
+                            <img src="/admin/static/img/image.svg" alt="">
+                        </span>
+                        Media Library
+                    </li>
+                    <li>
+                        <span>
+                            <img src="/admin/static/img/settings.svg" alt="">
+                        </span>
+                        Site Settings
+                    </li>
                 </ul>
             </div>
 
@@ -116,7 +141,9 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                         <span>Welcome,<br> <?php echo htmlspecialchars($user['username'] ?? 'User'); ?></span>
                     </li>
                     <li>
-                        <span>↩</span>
+                        <span>
+                            <img src="/admin/static/img/logout.svg" alt="">
+                        </span>
                         <a href="/auth/logout.php">Logout</a>
                     </li>
                 <?php else: ?>

@@ -9,7 +9,6 @@ class GuestModel extends BaseModel
 
     public function create(array $data)
     {
-        // New Guests schema: first_name, last_name, contact_email, phone_number
         $fullName = trim($data['name'] ?? ($data['first_name'] ?? ''));
         $parts = preg_split('/\s+/', $fullName, 2);
         $first = $parts[0] ?? '';
@@ -33,6 +32,14 @@ class GuestModel extends BaseModel
         $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
+        return $stmt->fetch();
+    }
+
+    public function getByUserId(int $userId)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE user_id = :user_id LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':user_id' => $userId]);
         return $stmt->fetch();
     }
 

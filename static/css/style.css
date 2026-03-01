@@ -417,6 +417,32 @@ body {
     transform: translateY(-1px);
 }
 
+
+/* For kayak Icon */
+.material-icons {
+    font-size: 3rem;
+    color: #2c5f7c;
+    margin-bottom: 1rem;
+    display: block;
+}
+.amenity-card-section i {
+    font-size: 3rem;
+    color: #2c5f7c;
+    margin-bottom: 1rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ROOMS AMENITIES */
 
 .rooms-amenities {

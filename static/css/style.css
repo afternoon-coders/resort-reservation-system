@@ -12,12 +12,14 @@ body {
     padding-top: 50px;
 }
 
+
 /* CONTAINER */
 .container {
     max-width: 1200px;
     margin: auto;
     padding: 0 20px;
 }
+
 
 /* ========================= */
 /* NAVBAR */
@@ -28,13 +30,12 @@ body {
     left: 0;
     width: 100%;
     background: rgba(255,255,255);
-    padding: 20px 0; /* only top/bottom padding */
-    z-index: 1000;
+    padding: 20px 0; 
 }
 
 .nav-container {
     display: flex;
-    justify-content: space-between; /* logo left, links right */
+    justify-content: space-between; 
     align-items: center;
     width: 100%;     
     padding: 0 20px;  
@@ -43,11 +44,11 @@ body {
 }
 
 
-/* Logo + Text */
+/* Logo and Text */
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px; /* space between image and text */
+    gap: 10px; 
 }
 
 /* Circle Image */
@@ -62,7 +63,7 @@ body {
 .logo-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.2; /* space between main name and subtitle */
+    line-height: 1.2; 
 }
 
 /* Main title */
@@ -80,17 +81,20 @@ body {
     color: #666;
 }
 
-/* Nav links */
+/* ================== */
+/* ===  Nav links === */
+/* ================== */
+
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 30px;
-    align-items: center; /* vertical align with logo */
+    gap: 0px;
+    align-items: center; 
     margin: 0;
     padding: 0;
-    flex-shrink: 0; /* prevent shrinking */
+    flex-shrink: 0;
     margin-left: 20px;
-    margin-right: 20px; /* space between logo and nav links */
+    margin-right: 20px;
 }
 
 .nav-links a {
@@ -114,7 +118,7 @@ body {
 }
 
 /* ========================= */
-/* home-btn SECTION */
+/* HOME BUTTONS SECTION */
 /* ========================= */
 
 
@@ -174,11 +178,6 @@ body {
     background: white;
     color: #333;
 }
-
-
-
-
-
 
 
 
@@ -333,7 +332,11 @@ body {
 }
 
 
-/* AMENITIES */
+
+
+/* ====================== */
+/* ====   AMENITIES  ==== */
+/* ====================== */
 
 .amenities {
     padding: 80px 0;
@@ -425,21 +428,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
     transform: translateY(-1px);
 }
-
-
-/* For kayak Icon */
-.material-icons {
-    font-size: 3rem;
-    color: #2c5f7c;
-    margin-bottom: 1rem;
-    display: block;
-}
-.amenity-card-section i {
-    font-size: 3rem;
-    color: #2c5f7c;
-    margin-bottom: 1rem;
-}
-
 
 
 

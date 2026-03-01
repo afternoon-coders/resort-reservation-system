@@ -811,6 +811,144 @@ body {
 }
 
 
+
+
+/* ======================== */
+/* ===== Gallary Page ===== */
+/* ======================== */
+
+/* ===== GALLERY LAYOUT ===== */
+
+/* ===== GALLERY GRID ===== */
+
+.gallery {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 300px 300px;
+    gap: 20px;
+    padding: 60px 5%;
+}
+
+/* BIG IMAGE */
+.gallery-item.big {
+    grid-row: span 2;
+}
+
+/* Force 4th, 5th, 6th to be bottom row */
+.gallery-item:nth-child(4) {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.gallery-item:nth-child(5) {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.gallery-item:nth-child(6) {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+/* General Styling */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    height: 100%;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.08);
+}
+
+/* Caption */
+.caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    color: white;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .gallery {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .gallery-item.big {
+        grid-row: span 1;
+    }
+}
+
+
+
+
+/* ===== GALLERY GRID ===== */
+
+.galler_section {
+    padding: 60px 5%;
+}
+
+/* ===== GRID ===== */
+
+.parent {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 300px);
+    gap: 20px;
+}
+
+/* GRID AREAS */
+.div1 { grid-area: 1 / 1 / 3 / 3; }
+.div2 { grid-area: 1 / 3 / 2 / 4; }
+.div3 { grid-area: 2 / 3 / 3 / 4; }
+.div4 { grid-area: 3 / 1 / 4 / 2; }
+.div5 { grid-area: 3 / 2 / 4 / 3; }
+.div6 { grid-area: 3 / 3 / 4 / 4; }
+.div7 { grid-area: 4 / 1 / 5 / 2; }
+
+/* ===== IMAGE STYLING ===== */
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    color: white;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
 /* ======================== */
 /* ===== CONTACT PAGE ===== */
 /* ======================== */

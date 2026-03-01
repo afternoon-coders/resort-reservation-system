@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="signup-card">
             
-            <img src="\static\images\lepaseo_logo.jpg" alt="Logo" class="logo-img">
+            <img src="\static\img\lepaseo_logo.jpg" alt="Logo" class="logo-img">
 
             <h1>Create Account</h1>
             <p>Join us for the best hotel experience</p>

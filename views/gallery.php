@@ -20,16 +20,16 @@
 
     <section class="gallery">
         <div class="gallery-left">
-            <img src="static/images/lapaseo_bar.jpg" alt="Barr Mont Le Paseo Resort">
+            <img src="static/img/lapaseo_bar.jpg" alt="Barr Mont Le Paseo Resort">
             <div class="caption">Barr Mont Le Paseo Resort</div>
         </div>
         <div class="gallery-right">
             <div class="gallery-item">
-                <img src="static/images/sea_view.jpg" alt="Ocean view from the resort">
+                <img src="static/img/sea_view.jpg" alt="Ocean view from the resort">
                 <div class="caption">Ocean View from the Resort</div>
             </div>
             <div class="gallery-item">
-                <img src="static/images/cottage.jpg" alt="Overwater Suite">
+                <img src="static/img/cottage.jpg" alt="Overwater Suite">
                 <div class="caption">Resort Cottage</div>
             </div>
         </div>

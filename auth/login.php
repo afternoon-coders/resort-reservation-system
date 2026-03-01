@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
 
         <div class="login-card">
-            <img src="\static\images\lepaseo_logo.jpg" alt="Logo" class="logo-img">
+            <img src="\static\img\lepaseo_logo.jpg" alt="Logo" class="logo-img">
 
             <h1>Welcome</h1>
             <p class="subtitle">Sign in to manage your reservations</p>

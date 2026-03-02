@@ -32,6 +32,7 @@ body {
 
 .footer-col h3 {
     color: #ffffff;
+    margin-left: 10px;
     margin-bottom: 20px;
 }
 
@@ -56,17 +57,26 @@ body {
 }
 
 .footer-col ul li {
-    margin-bottom: 12px;
+    gap: 5px;
 }
 
 .footer-col ul li a {
+    display: inline-flex;
+    text-align: center;
+    gap: 5px;
     text-decoration: none;
+    padding: 5px 10px;
     color: #cfd8dc;
     transition: 0.3s;
 }
 
-.footer-col ul li a:hover {
-    color: #8ad3d6;
+.footer-col li:hover {
+    background: transparent;
+}
+
+
+.footer-col li a:hover {
+    color: #086584;
 }
 
 .footer-col li {

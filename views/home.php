@@ -16,7 +16,7 @@
             <h1>Welcome to Paradise</h1>
             <p>Barr Month Le Paseo Isla Andis Resort is a serene island escape in Ando Island, Borongan City, Eastern Samar — where crystal-clear waters, golden sunsets, and laid-back coastal charm create the perfect getaway for relaxation and adventure.</p>
             <div class="home-btn-buttons">
-                <a href="index.php?page=rooms" class="btn-primary">Book Your Stay</a>
+                <a href="index.php?page=booknow" class="btn-primary">Book Your Stay</a>
                 <a href="index.php?page=rooms" class="btn-secondary">Explore Room</a>
             </div>
         </div>

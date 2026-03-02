@@ -296,7 +296,7 @@ if (isLoggedIn()) {
             
             <div style="margin-top: 20px; font-size: 13px; color: #64748b;">
                 <p style="margin-bottom: 8px;"><i class="fa-solid fa-circle-check" style="color: #22c55e; margin-right: 6px;"></i> Free cancellation within 48 hours</p>
-                <p><i class="fa-solid fa-circle-check" style="color: #22c55e; margin-right: 6px;"></i> No booking fees</p>
+                <p><i class="fa-solid fa-circle-check" style="color: #22c55e; margin-right: 6px;"></i> Online booking fees</p>
             </div>
         </div>
 

@@ -2,10 +2,12 @@
 require_once 'helpers/RoomModel.php';
 require_once 'helpers/GuestModel.php';
 require_once 'helpers/ReservationModel.php';
+require_once 'helpers/UserModel.php';
 
 $roomModel = new RoomModel();
 $guestModel = new GuestModel();
 $reservationModel = new ReservationModel();
+$userModel = new UserModel();
 
 $selectedRoomId = $_GET['room_id'] ?? null;
 $allRooms = $roomModel->getAll(['status' => 'available']);
@@ -84,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 if (isLoggedIn()) {
     $currentUser = getCurrentUser();
+    echo $currentUser['user_id'];
     $guest = $guestModel->getByUserId($currentUser['user_id']);
     if ($guest) {
         $firstName = $guest['first_name'] ?? '';
@@ -92,6 +95,11 @@ if (isLoggedIn()) {
         $phone = $guest['phone_number'] ?? '';
     } else {
         $email = $currentUser['email'] ?? '';
+        $user = $userModel->getById($currentUser['user_id']);
+        if ($user) {
+            $firstName = $user['first_name'] ?? '';
+            $lastName = $user['last_name'] ?? '';
+        }
     }
 }
 ?>
@@ -215,7 +223,7 @@ if (isLoggedIn()) {
                         </select>
                     </div>
                 </div>
-
+                
                 <div style="margin-top:16px; max-width:260px;">
                     <label class="booknow-label">Room Type</label>
                     <select name="room_id" class="booknow-select" id="roomType" onchange="updateSummary()" required>

@@ -56,18 +56,15 @@
 
             <div class="div7 gallery-item">
                 <img src="static/img/relaxing_port.jpg">
-                <div class="caption">Extra Image</div>
+                <div class="caption">Relaxing Port</div>
             </div>
 
             <div class="div8 gallery-item">
                 <img src="static/img/volleyball.jpg">
-                <div class="caption">Extra Image</div>
+                <div class="caption">Volleyball Court</div>
             </div>
-    
-            <div class="div9 gallery-item">
-                <img src="static/img/bar_side.jpg">
-                <div class="caption">Extra Image</div>
-            </div>
+
+            
 
         </div>
 

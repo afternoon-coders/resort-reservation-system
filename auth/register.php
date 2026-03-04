@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 // 2. Create user account linked to guest
-                $username = explode('@', $email)[0] . '_' . substr(md5($email), 0, 6);
+                $username = explode('@', $email)[0];
                 $userId = $userModel->create([
                     'guest_id' => $guestId,
                     'username' => $username,

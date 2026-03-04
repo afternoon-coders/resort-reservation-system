@@ -33,24 +33,40 @@ try {
         }
 
         if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
-            // Map room status to is_available for Cottages
-            $isAvail = (strtolower($_POST['status']) === 'available') ? 1 : 0;
-            $stmt = $pdo->prepare('UPDATE Cottages SET is_available = :avail WHERE cottage_id = :id');
-            $stmt->execute([':avail' => $isAvail, ':id' => (int)$_POST['room_id']]);
-            $message = 'Cottage availability updated.';
+            $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
+            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
+            $message = 'Cottage status updated.';
         }
     }
     
-    // Recent reservations
+    // Calculate Stats
+    $roomsTotal = $pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
+    $roomsAvailable = $pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Available'")->fetchColumn();
+    $reservationsTotal = $pdo->query("SELECT COUNT(*) FROM Reservations")->fetchColumn();
+    $reservationsPending = $pdo->query("SELECT COUNT(*) FROM Reservations WHERE status = 'Pending'")->fetchColumn();
+    $usersTotal = $pdo->query("SELECT COUNT(*) FROM Users")->fetchColumn();
+    $paymentsTotal = $pdo->query("SELECT SUM(amount_paid) FROM Payments")->fetchColumn() ?: 0.0;
+
+    // Recent reservations - Using GROUP_CONCAT for multiple cottages
     $recentReservations = $pdo->query(
-        "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, CONCAT(g.first_name, ' ', g.last_name) AS guest_name, c.cottage_number
+        "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, 
+                CONCAT(COALESCE(g.first_name,''), ' ', COALESCE(g.last_name,'')) AS guest_name, 
+                GROUP_CONCAT(c.cottage_number SEPARATOR ', ') as cottage_number
          FROM Reservations r
          LEFT JOIN Guests g ON r.guest_id = g.guest_id
-         LEFT JOIN Cottages c ON r.cottage_id = c.cottage_id
+         LEFT JOIN Reservation_Items ri ON r.reservation_id = ri.reservation_id
+         LEFT JOIN Cottages c ON ri.cottage_id = c.cottage_id
+         GROUP BY r.reservation_id
          ORDER BY r.reservation_id DESC LIMIT 8"
     )->fetchAll();
 
-    $recentUsers = $pdo->query('SELECT user_id, username, first_name, middle_name, last_name, account_email, role FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
+    // Recent users - Joining with Guests
+    $recentUsers = $pdo->query(
+        "SELECT u.user_id, u.username, g.first_name, g.last_name, g.email as account_email, u.role 
+         FROM Users u 
+         LEFT JOIN Guests g ON u.guest_id = g.guest_id
+         ORDER BY u.user_id DESC LIMIT 8"
+    )->fetchAll();
 
 } catch (Exception $e) {
     $error = $e->getMessage();

@@ -24,10 +24,11 @@ try {
     
 
     $recentUsers = $pdo->query(
-        'SELECT user_id, username, first_name, middle_name, last_name, account_email, role 
-        FROM Users 
-        WHERE role = "guest"
-        ORDER BY user_id DESC 
+        'SELECT u.user_id, u.username, g.first_name, g.last_name, g.email as account_email, u.role 
+        FROM Users u
+        LEFT JOIN Guests g ON u.guest_id = g.guest_id
+        WHERE u.role = "guest"
+        ORDER BY u.user_id DESC 
         LIMIT 8'
     )->fetchAll();
 

@@ -39,25 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Email already registered.';
         } else {
             try {
-                // Create user account
+                // 1. Create guest profile first
+                $guestId = $guestModel->create([
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'address' => '' 
+                ]);
+
+                // 2. Create user account linked to guest
                 $username = explode('@', $email)[0] . '_' . substr(md5($email), 0, 6);
                 $userId = $userModel->create([
+                    'guest_id' => $guestId,
                     'username' => $username,
-                    'first_name' => $firstName,
-                    'middle_name' => $middleName,
-                    'last_name' => $lastName,
                     'email' => $email,
                     'password' => $password,
                     'role' => 'guest'
-                ]);
-
-                // Create guest profile linked to user
-                $guestId = $guestModel->create([
-                    'user_id' => $userId,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $email,
-                    'phone' => $phone
                 ]);
 
                 // Log in the new user
@@ -127,11 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="first_name" required class="form-input">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="middleName">Middle Name</label>
-                        <input type="text" id="middleName" name="middle_name" class="form-input">
                     </div>
 
                     <div class="form-group">

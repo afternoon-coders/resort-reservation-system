@@ -14,6 +14,10 @@ $cottages = [
     ['number' => '102', 'type' => 'Cottage', 'price' => 2000, 'max_occupancy' => 2, 'status' => 'Available'],
     ['number' => '103', 'type' => 'Bird House', 'price' => 1500, 'max_occupancy' => 2, 'status' => 'Available'],
     ['number' => '104', 'type' => 'Tree House', 'price' => 1500, 'max_occupancy' => 2, 'status' => 'Available'],
+    ['number' => '105', 'type' => 'A Frame', 'price' => 6000, 'max_occupancy' => 4, 'status' => 'Available'],
+    ['number' => '106', 'type' => 'Cottage', 'price' => 2000, 'max_occupancy' => 2, 'status' => 'Available'],
+    ['number' => '107', 'type' => 'Bird House', 'price' => 1500, 'max_occupancy' => 2, 'status' => 'Available'],
+    ['number' => '108', 'type' => 'Tree House', 'price' => 1500, 'max_occupancy' => 2, 'status' => 'Available'],
 ];
 
 try {

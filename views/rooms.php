@@ -3,17 +3,18 @@ require_once 'helpers/RoomModel.php';
 
 // Fetch rooms from database
 $roomModel = new RoomModel();
-$dbRooms = $roomModel->getAll(['status' => 'available']);
+// Use the new status ENUM 'Available'
+$dbRooms = $roomModel->getAll(['status' => 'Available']);
 
 // Format rooms for JavaScript
 $formattedRooms = array_map(function($room) {
     return [
-        'room_id' => $room['cottage_id'] ?? $room['room_id'],
-        'name' => $room['name'] ?? $room['room_type'],
-        'price' => (int)($room['base_price'] ?? $room['price_per_night'] ?? 0),
-        'image' => 'static/img/' . strtolower(str_replace(' ', '_', $room['name'] ?? $room['room_type'] ?? 'cottage')) . '.jpg',
-        'description' => 'Beautiful ' . ($room['name'] ?? $room['room_type'] ?? 'cottage') . ' with premium amenities and stunning views.',
-        'beds' => (int)($room['max_occupancy'] ?? $room['number_of_beds'] ?? 0)
+        'room_id' => $room['cottage_id'],
+        'name' => $room['name'] ?? 'Cottage',
+        'price' => (int)($room['base_price'] ?? 0),
+        'image' => 'static/img/' . strtolower(str_replace(' ', '_', $room['name'] ?? 'cottage')) . '.jpg',
+        'description' => $room['description'] ?? 'Beautiful ' . ($room['name'] ?? 'cottage') . ' with premium amenities and stunning views.',
+        'beds' => (int)($room['max_occupancy'] ?? 0)
     ];
 }, $dbRooms);
 ?>

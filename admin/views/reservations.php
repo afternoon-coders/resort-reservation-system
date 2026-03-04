@@ -33,11 +33,9 @@ try {
         }
 
         if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
-            // Map room status to is_available for Cottages
-            $isAvail = (strtolower($_POST['status']) === 'available') ? 1 : 0;
-            $stmt = $pdo->prepare('UPDATE Cottages SET is_available = :avail WHERE cottage_id = :id');
-            $stmt->execute([':avail' => $isAvail, ':id' => (int)$_POST['room_id']]);
-            $message = 'Cottage availability updated.';
+            $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
+            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
+            $message = 'Cottage status updated.';
         }
     }
 
@@ -52,16 +50,17 @@ try {
 
     $query = "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, 
                      CONCAT(COALESCE(g.first_name,''), ' ', COALESCE(g.last_name,'')) AS guest_name, 
-                     g.contact_email, c.cottage_number
+                     g.email AS contact_email, GROUP_CONCAT(c.cottage_number SEPARATOR ', ') as cottage_number
               FROM Reservations r
               LEFT JOIN Guests g ON r.guest_id = g.guest_id
-              LEFT JOIN Cottages c ON r.cottage_id = c.cottage_id";
+              LEFT JOIN Reservation_Items ri ON r.reservation_id = ri.reservation_id
+              LEFT JOIN Cottages c ON ri.cottage_id = c.cottage_id";
     
     $where = [];
     $params = [];
 
     if ($searchTerm) {
-        $searchCond = "(g.first_name LIKE :s1 OR g.last_name LIKE :s2 OR g.contact_email LIKE :s3";
+        $searchCond = "(g.first_name LIKE :s1 OR g.last_name LIKE :s2 OR g.email LIKE :s3";
         $params[':s1'] = "%$searchTerm%";
         $params[':s2'] = "%$searchTerm%";
         $params[':s3'] = "%$searchTerm%";
@@ -84,7 +83,7 @@ try {
         $query .= " WHERE " . implode(" AND ", $where);
     }
 
-    $query .= " ORDER BY r.reservation_id DESC LIMIT 50";
+    $query .= " GROUP BY r.reservation_id ORDER BY r.reservation_id DESC LIMIT 50";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);

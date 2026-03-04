@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $userId = isLoggedIn() ? getCurrentUser()['user_id'] : null;
 
             if ($userId) {
+                // getByUserId now handles the join
                 $existingGuest = $guestModel->getByUserId($userId);
                 if ($existingGuest) {
                     $guestId = $existingGuest['guest_id'];
@@ -52,21 +53,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             if (!$guestId) {
                 $guestId = $guestModel->create([
-                    'user_id' => $userId,
                     'first_name' => $fName,
                     'last_name' => $lName,
                     'email' => $contactEmail,
-                    'phone' => $phoneNumber
+                    'phone' => $phoneNumber,
+                    'address' => '' // Can add field if needed
                 ]);
             }
 
+            // ReservationModel::create now handles Reservation_Items automatically
             $reservationId = $reservationModel->create([
                 'guest_id' => $guestId,
-                'room_id' => $roomId,
+                'room_id' => $roomId, // Model expects 'room_id' or 'cottage_id' in data array
                 'check_in_date' => $checkIn,
                 'check_out_date' => $checkOut,
                 'total_amount' => $totalAmount,
-                'status' => 'Pending'
+                'status' => 'Pending',
+                'notes' => $specialRequests
             ]);
 
             if ($reservationId) {
@@ -86,20 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 if (isLoggedIn()) {
     $currentUser = getCurrentUser();
-    echo $currentUser['user_id'];
-    $guest = $guestModel->getByUserId($currentUser['user_id']);
-    if ($guest) {
-        $firstName = $guest['first_name'] ?? '';
-        $lastName = $guest['last_name'] ?? '';
-        $email = $guest['contact_email'] ?? '';
-        $phone = $guest['phone_number'] ?? '';
-    } else {
-        $email = $currentUser['email'] ?? '';
-        $user = $userModel->getById($currentUser['user_id']);
-        if ($user) {
-            $firstName = $user['first_name'] ?? '';
-            $lastName = $user['last_name'] ?? '';
-        }
+    // UserModel::getById now returns joined guest info
+    $user = $userModel->getById($currentUser['user_id']);
+    if ($user) {
+        $firstName = $user['first_name'] ?? '';
+        $lastName = $user['last_name'] ?? '';
+        $email = $user['email'] ?? $user['account_email'] ?? '';
+        $phone = $user['phone_number'] ?? '';
     }
 }
 ?>

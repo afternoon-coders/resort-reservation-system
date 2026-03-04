@@ -13,15 +13,11 @@ body {
   margin: 0;
 }
 
-.wrapper {
-    display: flex;
-    width: 100%;
-    min-height: 100vh;
-}
+
 
 /* Sidebar stays fixed on the left */
 .sidebar {
-    width: 260px;
+    width: 230px;
     height: 100vh;
     background: linear-gradient(180deg, #0f2c33, #0a1f24);
     color: #cfd8dc;

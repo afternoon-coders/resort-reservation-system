@@ -9,7 +9,7 @@ try {
     $gq = $pdo->query('SELECT guest_id FROM Guests LIMIT 10');
     $guestIds = array_column($gq->fetchAll(), 'guest_id');
 
-    $cq = $pdo->query('SELECT cottage_id, base_price FROM Cottages WHERE is_available = 1 LIMIT 10');
+    $cq = $pdo->query("SELECT cottage_id, base_price FROM Cottages WHERE status = 'Available' LIMIT 10");
     $cottages = $cq->fetchAll();
 
     if (empty($guestIds) || empty($cottages)) {
@@ -26,22 +26,31 @@ try {
         $checkOut = $today->modify('+' . ($i + 3) . ' days')->format('Y-m-d');
         $total = ($c['base_price'] ?? 1000) * 2; // two nights
 
-        // skip if similar reservation exists
-        $sq = $pdo->prepare('SELECT reservation_id FROM Reservations WHERE guest_id = :gid AND cottage_id = :cid AND check_in_date = :ci LIMIT 1');
-        $sq->execute([':gid' => $gid, ':cid' => $c['cottage_id'], ':ci' => $checkIn]);
+        // skip if similar reservation exists (simplified check)
+        $sq = $pdo->prepare('SELECT reservation_id FROM Reservations WHERE guest_id = :gid AND check_in_date = :ci LIMIT 1');
+        $sq->execute([':gid' => $gid, ':ci' => $checkIn]);
         if ($sq->fetch()) continue;
 
-        $ins = $pdo->prepare('INSERT INTO Reservations (guest_id, cottage_id, check_in_date, check_out_date, total_amount, status) VALUES (:gid, :cid, :ci, :co, :total, :status)');
+        // Insert into Reservations
+        $ins = $pdo->prepare('INSERT INTO Reservations (guest_id, check_in_date, check_out_date, total_amount, status) VALUES (:gid, :ci, :co, :total, :status)');
         $ins->execute([
             ':gid' => $gid,
-            ':cid' => $c['cottage_id'],
             ':ci' => $checkIn,
             ':co' => $checkOut,
             ':total' => $total,
             ':status' => 'Pending',
         ]);
+        $reservationId = $pdo->lastInsertId();
 
-        echo "Created reservation for guest {$gid} in cottage {$c['cottage_id']} ({$checkIn} to {$checkOut})\n";
+        // Insert into Reservation_Items
+        $insItem = $pdo->prepare('INSERT INTO Reservation_Items (reservation_id, cottage_id, price_at_booking) VALUES (:rid, :cid, :price)');
+        $insItem->execute([
+            ':rid' => $reservationId,
+            ':cid' => $c['cottage_id'],
+            ':price' => $c['base_price'],
+        ]);
+
+        echo "Created reservation #{$reservationId} for guest {$gid} in cottage {$c['cottage_id']} ({$checkIn} to {$checkOut})\n";
         $added++;
     }
 

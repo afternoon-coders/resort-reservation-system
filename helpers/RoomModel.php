@@ -10,14 +10,14 @@ class RoomModel extends BaseModel
 
     public function create(array $data)
     {
-        $sql = "INSERT INTO {$this->table} (cottage_number, name, base_price, max_occupancy, is_available) VALUES (:cottage_number, :name, :base_price, :max_occupancy, :is_available)";
+        $sql = "INSERT INTO {$this->table} (cottage_number, type_id, base_price, max_occupancy, status) VALUES (:cottage_number, :type_id, :base_price, :max_occupancy, :status)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':cottage_number' => $data['room_number'] ?? $data['cottage_number'] ?? null,
-            ':name' => $data['room_type'] ?? $data['name'] ?? null,
-            ':base_price' => $data['price_per_night'] ?? $data['base_price'] ?? 0,
+            ':type_id' => $data['type_id'] ?? 1, // Default to first type if not provided
+            ':base_price' => $data['price_per_night'] ?? $data['base_price'] ?? 0.00,
             ':max_occupancy' => $data['number_of_beds'] ?? $data['max_occupancy'] ?? 1,
-            ':is_available' => isset($data['status']) ? ($data['status'] === 'available' ? 1 : 0) : 1,
+            ':status' => $data['status'] ?? 'Available',
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -25,7 +25,10 @@ class RoomModel extends BaseModel
 
     public function getById(int $id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id LIMIT 1";
+        $sql = "SELECT c.*, t.type_name as name, t.description 
+                FROM {$this->table} c 
+                JOIN Cottage_Types t ON c.type_id = t.type_id 
+                WHERE c.{$this->primaryKey} = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
@@ -33,12 +36,19 @@ class RoomModel extends BaseModel
 
     public function getAll(array $opts = [])
     {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT c.*, t.type_name as name, t.description 
+                FROM {$this->table} c 
+                JOIN Cottage_Types t ON c.type_id = t.type_id";
         $params = [];
+        $where = [];
 
         if (isset($opts['status'])) {
-            $sql .= " WHERE is_available = :is_available";
-            $params[':is_available'] = $opts['status'] === 'available' ? 1 : 0;
+            $where[] = "c.status = :status";
+            $params[':status'] = $opts['status'];
+        }
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
         }
 
         if (!empty($opts['limit'])) {
@@ -47,8 +57,8 @@ class RoomModel extends BaseModel
 
         $stmt = $this->pdo->prepare($sql);
 
-        if (isset($params[':is_available'])) {
-            $stmt->bindValue(':is_available', $params[':is_available'], PDO::PARAM_INT);
+        if (isset($params[':status'])) {
+            $stmt->bindValue(':status', $params[':status']);
         }
         if (!empty($opts['limit'])) {
             $stmt->bindValue(':limit', (int)$opts['limit'], PDO::PARAM_INT);
@@ -64,9 +74,9 @@ class RoomModel extends BaseModel
         $params = [':id' => $id];
 
         if (isset($data['room_number'])) { $fields[] = 'cottage_number = :cottage_number'; $params[':cottage_number'] = $data['room_number']; }
-        if (isset($data['room_type'])) { $fields[] = 'name = :name'; $params[':name'] = $data['room_type']; }
+        if (isset($data['type_id'])) { $fields[] = 'type_id = :type_id'; $params[':type_id'] = $data['type_id']; }
         if (isset($data['price_per_night'])) { $fields[] = 'base_price = :base_price'; $params[':base_price'] = $data['price_per_night']; }
-        if (isset($data['status'])) { $fields[] = 'is_available = :is_available'; $params[':is_available'] = ($data['status'] === 'available') ? 1 : 0; }
+        if (isset($data['status'])) { $fields[] = 'status = :status'; $params[':status'] = $data['status']; }
         if (isset($data['number_of_beds'])) { $fields[] = 'max_occupancy = :max_occupancy'; $params[':max_occupancy'] = $data['number_of_beds']; }
 
         if (empty($fields)) {

@@ -21,8 +21,14 @@ try {
         if ($sq->fetch()) continue;
 
         $amt = ($r['total_amount'] ?? 1000) / 2.0; // make a partial payment
-        $ins = $pdo->prepare('INSERT INTO Payments (reservation_id, amount_paid, payment_method, payment_status) VALUES (:rid, :amt, :method, :status)');
-        $ins->execute([':rid' => $r['reservation_id'], ':amt' => $amt, ':method' => 'Credit Card', ':status' => 'Completed']);
+        $ins = $pdo->prepare('INSERT INTO Payments (reservation_id, amount_paid, payment_method, payment_status, transaction_ref) VALUES (:rid, :amt, :method, :status, :ref)');
+        $ins->execute([
+            ':rid' => $r['reservation_id'], 
+            ':amt' => $amt, 
+            ':method' => 'Credit Card', 
+            ':status' => 'Completed',
+            ':ref' => 'TXN-' . strtoupper(uniqid())
+        ]);
 
         echo "Inserted payment for reservation {$r['reservation_id']} amount {$amt}\n";
         $added++;

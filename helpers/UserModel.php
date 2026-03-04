@@ -9,13 +9,11 @@ class UserModel extends BaseModel
 
     public function create(array $data)
     {
-        $sql = "INSERT INTO {$this->table} (username, first_name, middle_name, last_name, password_hash, account_email, role) VALUES (:username, :first_name, :middle_name, :last_name, :password_hash, :account_email, :role)";
+        $sql = "INSERT INTO {$this->table} (guest_id, username, password_hash, account_email, role) VALUES (:guest_id, :username, :password_hash, :account_email, :role)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
+            ':guest_id' => $data['guest_id'] ?? null,
             ':username' => $data['username'] ?? null,
-            ':first_name' => $data['first_name'] ?? '',
-            ':middle_name' => $data['middle_name'] ?? null,
-            ':last_name' => $data['last_name'] ?? '',
             ':password_hash' => password_hash($data['password'] ?? '', PASSWORD_BCRYPT),
             ':account_email' => $data['email'] ?? null,
             ':role' => $data['role'] ?? 'guest',
@@ -26,7 +24,10 @@ class UserModel extends BaseModel
 
     public function getById(int $id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id LIMIT 1";
+        $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email 
+                FROM {$this->table} u 
+                LEFT JOIN Guests g ON u.guest_id = g.guest_id 
+                WHERE u.{$this->primaryKey} = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
@@ -34,7 +35,10 @@ class UserModel extends BaseModel
 
     public function getByUsername(string $username)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE username = :username LIMIT 1";
+        $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email 
+                FROM {$this->table} u 
+                LEFT JOIN Guests g ON u.guest_id = g.guest_id 
+                WHERE u.username = :username LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':username' => $username]);
         return $stmt->fetch();
@@ -42,7 +46,10 @@ class UserModel extends BaseModel
 
     public function getByEmail(string $email)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE account_email = :email LIMIT 1";
+        $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email 
+                FROM {$this->table} u 
+                LEFT JOIN Guests g ON u.guest_id = g.guest_id 
+                WHERE u.account_email = :email LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':email' => $email]);
         return $stmt->fetch();
@@ -50,17 +57,24 @@ class UserModel extends BaseModel
 
     public function getAll(array $opts = [])
     {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT u.*, g.first_name, g.last_name 
+                FROM {$this->table} u 
+                LEFT JOIN Guests g ON u.guest_id = g.guest_id";
 
         $params = [];
+        $where = [];
         
         if (!empty($opts['role'])) {
-            $sql .= " WHERE role = :role";
+            $where[] = "u.role = :role";
             $params[':role'] = $opts['role'];
         }
 
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+
         if (!empty($opts['limit'])) {
-            $sql .= (strpos($sql, 'WHERE') ? ' ' : ' ') . "LIMIT :limit";
+            $sql .= " LIMIT :limit";
             $params[':limit'] = (int)$opts['limit'];
         }
 
@@ -68,9 +82,14 @@ class UserModel extends BaseModel
 
         if (isset($params[':limit'])) {
             $stmt->bindValue(':limit', $params[':limit'], PDO::PARAM_INT);
+            unset($params[':limit']);
         }
         
-        $stmt->execute($params);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+
+        $stmt->execute();
         return $stmt->fetchAll();
     }
 
@@ -79,10 +98,8 @@ class UserModel extends BaseModel
         $fields = [];
         $params = [':id' => $id];
 
+        if (isset($data['guest_id'])) { $fields[] = 'guest_id = :guest_id'; $params[':guest_id'] = $data['guest_id']; }
         if (isset($data['username'])) { $fields[] = 'username = :username'; $params[':username'] = $data['username']; }
-        if (isset($data['first_name'])) { $fields[] = 'first_name = :first_name'; $params[':first_name'] = $data['first_name']; }
-        if (array_key_exists('middle_name', $data)) { $fields[] = 'middle_name = :middle_name'; $params[':middle_name'] = $data['middle_name']; }
-        if (isset($data['last_name'])) { $fields[] = 'last_name = :last_name'; $params[':last_name'] = $data['last_name']; }
         if (isset($data['password'])) { $fields[] = 'password_hash = :password_hash'; $params[':password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT); }
         if (isset($data['email'])) { $fields[] = 'account_email = :account_email'; $params[':account_email'] = $data['email']; }
         if (isset($data['role'])) { $fields[] = 'role = :role'; $params[':role'] = $data['role']; }

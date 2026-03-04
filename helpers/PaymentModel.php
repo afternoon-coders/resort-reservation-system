@@ -9,14 +9,15 @@ class PaymentModel extends BaseModel
 
     public function create(array $data)
     {
-        $sql = "INSERT INTO {$this->table} (reservation_id, amount_paid, payment_method, payment_date, payment_status) VALUES (:reservation_id, :amount_paid, :payment_method, :payment_date, :payment_status)";
+        $sql = "INSERT INTO {$this->table} (reservation_id, amount_paid, payment_method, payment_date, payment_status, transaction_ref) VALUES (:reservation_id, :amount_paid, :payment_method, :payment_date, :payment_status, :transaction_ref)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':reservation_id' => $data['reservation_id'],
-            ':amount_paid' => $data['amount'] ?? $data['amount_paid'] ?? 0,
-            ':payment_method' => $data['payment_method'] ?? 'Unknown',
+            ':amount_paid' => $data['amount'] ?? $data['amount_paid'] ?? 0.00,
+            ':payment_method' => $data['payment_method'] ?? 'Cash',
             ':payment_date' => $data['payment_date'] ?? date('Y-m-d H:i:s'),
             ':payment_status' => $data['payment_status'] ?? 'Completed',
+            ':transaction_ref' => $data['transaction_ref'] ?? null,
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -24,7 +25,11 @@ class PaymentModel extends BaseModel
 
     public function getById(int $id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id LIMIT 1";
+        $sql = "SELECT p.*, r.guest_id, g.first_name, g.last_name 
+                FROM {$this->table} p 
+                JOIN Reservations r ON p.reservation_id = r.reservation_id 
+                JOIN Guests g ON r.guest_id = g.guest_id 
+                WHERE p.{$this->primaryKey} = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
@@ -32,15 +37,20 @@ class PaymentModel extends BaseModel
 
     public function getAll(array $opts = [])
     {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT p.*, g.first_name, g.last_name 
+                FROM {$this->table} p 
+                JOIN Reservations r ON p.reservation_id = r.reservation_id 
+                JOIN Guests g ON r.guest_id = g.guest_id";
         $params = [];
+        $where = [];
 
-        $clauses = [];
-        if (!empty($opts['reservation_id'])) { $clauses[] = 'reservation_id = :reservation_id'; $params[':reservation_id'] = $opts['reservation_id']; }
+        if (!empty($opts['reservation_id'])) { $where[] = 'p.reservation_id = :reservation_id'; $params[':reservation_id'] = $opts['reservation_id']; }
 
-        if (!empty($clauses)) {
-            $sql .= ' WHERE ' . implode(' AND ', $clauses);
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
+
+        $sql .= " ORDER BY p.payment_date DESC";
 
         if (!empty($opts['limit'])) {
             $sql .= " LIMIT :limit";
@@ -69,7 +79,8 @@ class PaymentModel extends BaseModel
         if (isset($data['amount'])) { $fields[] = 'amount_paid = :amount_paid'; $params[':amount_paid'] = $data['amount']; }
         if (isset($data['payment_method'])) { $fields[] = 'payment_method = :payment_method'; $params[':payment_method'] = $data['payment_method']; }
         if (isset($data['payment_date'])) { $fields[] = 'payment_date = :payment_date'; $params[':payment_date'] = $data['payment_date']; }
-        if (isset($data['payment_status'])) { $fields[] = 'payment_status = :payment_status'; $params[':payment_status'] = $data['payment_status']; }
+        if (isset($data['payment_status'])) { $fields[] = 'payment_status = :payment_status'; $params[':status'] = $data['payment_status']; }
+        if (isset($data['transaction_ref'])) { $fields[] = 'transaction_ref = :transaction_ref'; $params[':transaction_ref'] = $data['transaction_ref']; }
 
         if (empty($fields)) {
             return false;

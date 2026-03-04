@@ -140,24 +140,32 @@ window.onload = function() {
                             <td><?php echo htmlspecialchars($r['check_out_date']); ?></td>
                             <td><?php echo htmlspecialchars($r['status']); ?></td>
                             <td>
-                                <form method="post" style="display:inline-block;margin-right:6px;">
-                                    <input type="hidden" name="action" value="update_reservation_status">
-                                    <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                    <select name="status">
-                                        <option value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
-                                        <option value="Confirmed" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
-                                        <option value="Checked-In" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
-                                        <option value="Checked-Out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
-                                        <option value="Cancelled" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                                    </select>
-                                    <button type="submit">Update</button>
-                                </form>
+                                <div class="action-btn-container">
+                                    <form method="post" style="display:inline-block;margin-right:6px;">
+                                        <div class="action-btn">
+                                            <input type="hidden" name="action" value="update_reservation_status">
+                                            <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
+                                            <select name="status" class="badge">
+                                                <option value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
+                                                <option value="Confirmed" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                                <option value="Checked-In" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
+                                                <option value="Checked-Out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
+                                                <option value="Cancelled" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                            </select>
+                                            <button class="refresh-btn" type="submit">
+                                                <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
+                                            </button>
+                                        </div>
+                                    </form>
 
-                                <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete reservation?');">
-                                    <input type="hidden" name="action" value="delete_reservation">
-                                    <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                    <button type="submit">Delete</button>
-                                </form>
+                                    <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete reservation?');">
+                                        <input type="hidden" name="action" value="delete_reservation">
+                                        <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
+                                        <button class="delete-btn" type="submit">
+                                            <img src="/admin/static/img//adminpanel_icons/delete.svg" alt="">
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -166,34 +174,6 @@ window.onload = function() {
             <?php endif; ?>
         </div>
 
-        <div style="margin-top:20px;" class="card">
-            <h3>Recent Users</h3>
-            <?php if (empty($recentUsers)): ?>
-                <div class="muted">No users found.</div>
-            <?php else: ?>
-                <table>
-                    <thead><tr><th>ID</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-                    <tbody>
-                    <?php foreach ($recentUsers as $u): ?>
-                        <tr>
-                            <td><?php echo (int)$u['user_id']; ?></td>
-                            <td><?php echo htmlspecialchars($u['username']); ?></td>
-                            <td><?php echo htmlspecialchars(trim(implode(' ', array_filter([$u['first_name'], $u['middle_name'], $u['last_name']])))); ?></td>
-                            <td><?php echo htmlspecialchars($u['account_email'] ?? $u['email'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($u['role'] ?? 'guest'); ?></td>
-                            <td>
-                                <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete user?');">
-                                    <input type="hidden" name="action" value="delete_user">
-                                    <input type="hidden" name="user_id" value="<?php echo (int)$u['user_id']; ?>">
-                                    <button type="submit">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
 
         <div style="margin-top:20px;" class="card">
             <h3>Rooms</h3>

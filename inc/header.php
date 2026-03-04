@@ -51,9 +51,25 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                     <!-- I put 2 of this kind of condition. I have no other idea HAHAHHA -->
                     <?php if ($isLoggedIn): ?>
                         <li class="user-welcome">
-                            <span>Welcome,<br> <?php echo htmlspecialchars($user['username'] ?? 'User'); ?></span>
+                            <div class="profile-dropdown">
+                                <div class="profile-toggle" onclick="toggleDropdown()">
+                                    <span class="profile-name">
+                                        <?php echo htmlspecialchars($user['username'] ?? 'User'); ?>
+                                    </span>
+                                    <span class="arrow">▼</span>
+                                </div>
+
+                                <div class="dropdown-menu" id="dropdownMenu">
+                                    <a href="/profile.php">My Profile</a>
+                                    <a href="/settings.php">Settings</a>
+                                    <hr>
+                                    <a href="/auth/logout.php" class="logout">Logout</a>
+                                </div>
+                            </div>
                         </li>
-                        <li><a href="/auth/logout.php">Logout</a></li>
+                        <li>
+                            <a class="logout-btn"  href="/auth/logout.php">Logout</a>
+                        </li>
                     <?php else: ?>
                         <li><a href="/auth/login.php">Login</a></li>
                     <?php endif; ?>
@@ -157,6 +173,17 @@ $user = $isLoggedIn ? getCurrentUser() : null;
             </div>
     <?php endif; ?>
         </div>
+    
+    <script>
+    function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show");
+    }
 
+    window.onclick = function(event) {
+        if (!event.target.closest('.profile-dropdown')) {
+            document.getElementById("dropdownMenu").classList.remove("show");
+        }
+    }
+    </script>
 </body>
 </html>

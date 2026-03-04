@@ -118,7 +118,7 @@ window.onload = function() {
                             </td>
                             <td>
                                 <div class="action-btn-container">
-                                    <form method="post" >
+                                    <form method="post">
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">

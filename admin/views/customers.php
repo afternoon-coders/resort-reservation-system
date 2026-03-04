@@ -60,44 +60,65 @@ window.onload = function() {
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="">
-        
-        <?php if ($error): ?>
-            <div style="padding:12px;background:#fdecea;border:1px solid #f5c2c2;color:#6b0b0b;border-radius:4px;margin-bottom:12px;">Error: <?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
 
-        <div style="margin-top:20px;" class="">
-            <h3>Recent Reservations</h3>
-            <div style="margin-top:20px;" class="card">
-                <h3>Recent Users</h3>
-                <?php if (empty($recentUsers)): ?>
-                    <div class="muted">No users found.</div>
-                <?php else: ?>
-                    <table>
-                        <thead><tr><th>ID</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-                        <tbody>
-                        <?php foreach ($recentUsers as $u): ?>
-                            <tr>
-                                <td><?php echo (int)$u['user_id']; ?></td>
-                                <td><?php echo htmlspecialchars($u['username']); ?></td>
-                                <td><?php echo htmlspecialchars(trim(implode(' ', array_filter([$u['first_name'], $u['middle_name'], $u['last_name']])))); ?></td>
-                                <td><?php echo htmlspecialchars($u['account_email'] ?? $u['email'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($u['role'] ?? 'guest'); ?></td>
-                                <td>
-                                    <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete user?');">
-                                        <input type="hidden" name="action" value="delete_user">
-                                        <input type="hidden" name="user_id" value="<?php echo (int)$u['user_id']; ?>">
-                                        <button type="submit">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endif; ?>
-            </div>
-        </div>
+
+    <div class="page-header">
+        <h1>Customers</h1>
+        <p>View and manage customer information</p>
     </div>
+
+    <div class="search-wrapper">
+        <input type="text" placeholder="Search customers..." class="search-input">
+    </div>
+
+    <?php if ($error): ?>
+        <div class="error-box">
+            <?php echo htmlspecialchars($error); ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="customers-grid">
+        <?php if (empty($recentUsers)): ?>
+            <div class="muted">No customers found.</div>
+        <?php else: ?>
+            <?php foreach ($recentUsers as $u): ?>
+                <?php
+                    $fullName = trim(implode(' ', array_filter([
+                        $u['first_name'],
+                        $u['middle_name'],
+                        $u['last_name']
+                    ])));
+
+                    $initials = strtoupper(
+                        substr($u['first_name'] ?? '', 0, 1) .
+                        substr($u['last_name'] ?? '', 0, 1)
+                    );
+                ?>
+                <div class="customer-card">
+                    <div class="card-top">
+                        <div class="avatar">
+                            <?php echo $initials ?: 'U'; ?>
+                        </div>
+
+                        <button class="view-btn">View</button>
+                    </div>
+
+                    <h3><?php echo htmlspecialchars($fullName); ?></h3>
+
+                    <div class="customer-info">
+                        <div class="info-row">
+                            <img src="/static/img/icons/mail.svg" class="icon" alt="email icon">
+                            <span><?php echo htmlspecialchars($u['account_email'] ?? ''); ?></span>
+                        </div>
+                        <div>👤 <?php echo htmlspecialchars($u['username']); ?></div>
+                        <div>👤 <?php echo htmlspecialchars($u['username']); ?></div>
+                        <div>🏷 Role: <?php echo htmlspecialchars($u['role']); ?></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
 
 </body>
 </html>

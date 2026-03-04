@@ -60,7 +60,7 @@ try {
          ORDER BY r.reservation_id DESC LIMIT 8"
     )->fetchAll();
 
-    $recentUsers = $pdo->query('SELECT user_id, username, account_email, role FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
+    $recentUsers = $pdo->query('SELECT user_id, username, first_name, middle_name, last_name, account_email, role FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
 
 } catch (Exception $e) {
     $error = $e->getMessage();
@@ -182,12 +182,13 @@ window.onload = function() {
                 <div class="muted">No users found.</div>
             <?php else: ?>
                 <table>
-                    <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
                     <tbody>
                     <?php foreach ($recentUsers as $u): ?>
                         <tr>
                             <td><?php echo (int)$u['user_id']; ?></td>
                             <td><?php echo htmlspecialchars($u['username']); ?></td>
+                            <td><?php echo htmlspecialchars(trim(implode(' ', array_filter([$u['first_name'], $u['middle_name'], $u['last_name']])))); ?></td>
                             <td><?php echo htmlspecialchars($u['account_email'] ?? $u['email'] ?? ''); ?></td>
                             <td><?php echo htmlspecialchars($u['role'] ?? 'guest'); ?></td>
                             <td>

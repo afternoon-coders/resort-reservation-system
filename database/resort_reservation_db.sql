@@ -8,6 +8,9 @@ USE resort_reservation_db;
 CREATE TABLE Users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50) DEFAULT NULL,
+    last_name VARCHAR(50) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     account_email VARCHAR(100) UNIQUE NOT NULL,
     role VARCHAR(20) DEFAULT 'guest',

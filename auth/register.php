@@ -14,14 +14,16 @@ if (isset($_SESSION['user_id'])) {
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fullName = $_POST['fullName'] ?? '';
+    $firstName = $_POST['first_name'] ?? '';
+    $middleName = $_POST['middle_name'] ?? '';
+    $lastName = $_POST['last_name'] ?? ''; 
     $email = $_POST['email'] ?? '';
     $phone = $_POST['phone'] ?? '';
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
     // Validation
-    if (empty($fullName) || empty($email) || empty($password) || empty($confirmPassword)) {
+    if (empty($firstName) || empty($lastName) || empty($email) || empty($password) || empty($confirmPassword)) {
         $error = 'All fields are required.';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match.';
@@ -41,6 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $username = explode('@', $email)[0] . '_' . substr(md5($email), 0, 6);
                 $userId = $userModel->create([
                     'username' => $username,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'last_name' => $lastName,
                     'email' => $email,
                     'password' => $password,
                     'role' => 'guest'
@@ -49,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Create guest profile linked to user
                 $guestId = $guestModel->create([
                     'user_id' => $userId,
-                    'name' => $fullName,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
                     'email' => $email,
                     'phone' => $phone
                 ]);
@@ -57,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Log in the new user
                 $_SESSION['user_id'] = $userId;
                 $_SESSION['username'] = $username;
+                $_SESSION['full_name'] = trim(implode(' ', array_filter([$firstName, $middleName, $lastName])));
                 $_SESSION['email'] = $email;
                 $_SESSION['role'] = 'guest';
 
@@ -116,9 +123,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
-                <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" name="fullName" required class="form-input">
+                <div class="full-name">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="first_name" required class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="middleName">Middle Name</label>
+                        <input type="text" id="middleName" name="middle_name" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="last_name" required class="form-input">
+                    </div>
                 </div>
 
                 <div class="form-group">

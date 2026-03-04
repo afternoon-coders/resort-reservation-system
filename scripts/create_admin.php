@@ -12,17 +12,19 @@ if (php_sapi_name() !== 'cli') {
 $argc = $_SERVER['argc'];
 $argv = $_SERVER['argv'];
 
-if ($argc < 4) {
-    echo "Usage: php scripts/create_admin.php <username> <email> <password>\n";
+if ($argc < 6) {
+    echo "Usage: php scripts/create_admin.php <username> <first_name> <last_name> <email> <password>\n";
     exit(1);
 }
 
 $username = trim($argv[1]);
-$email = trim($argv[2]);
-$password = $argv[3];
+$firstName = trim($argv[2]);
+$lastName = trim($argv[3]);
+$email = trim($argv[4]);
+$password = $argv[5];
 
-if ($username === '' || $email === '' || $password === '') {
-    echo "Username, email and password are required.\n";
+if ($username === '' || $firstName === '' || $lastName === '' || $email === '' || $password === '') {
+    echo "Username, first name, last name, email and password are required.\n";
     exit(1);
 }
 
@@ -39,8 +41,8 @@ try {
     }
 
     $hash = password_hash($password, PASSWORD_BCRYPT);
-    $ins = $pdo->prepare('INSERT INTO Users (username, password_hash, account_email, role) VALUES (:u, :p, :e, :r)');
-    $ins->execute([':u' => $username, ':p' => $hash, ':e' => $email, ':r' => 'admin']);
+    $ins = $pdo->prepare('INSERT INTO Users (username, first_name, last_name, password_hash, account_email, role) VALUES (:u, :fn, :ln, :p, :e, :r)');
+    $ins->execute([':u' => $username, ':fn' => $firstName, ':ln' => $lastName, ':p' => $hash, ':e' => $email, ':r' => 'admin']);
 
     $id = (int)$pdo->lastInsertId();
     echo "Admin user created successfully with id: {$id}\n";

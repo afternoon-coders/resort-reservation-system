@@ -9,10 +9,13 @@ class UserModel extends BaseModel
 
     public function create(array $data)
     {
-        $sql = "INSERT INTO {$this->table} (username, password_hash, account_email, role) VALUES (:username, :password_hash, :account_email, :role)";
+        $sql = "INSERT INTO {$this->table} (username, first_name, middle_name, last_name, password_hash, account_email, role) VALUES (:username, :first_name, :middle_name, :last_name, :password_hash, :account_email, :role)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':username' => $data['username'] ?? null,
+            ':first_name' => $data['first_name'] ?? '',
+            ':middle_name' => $data['middle_name'] ?? null,
+            ':last_name' => $data['last_name'] ?? '',
             ':password_hash' => password_hash($data['password'] ?? '', PASSWORD_BCRYPT),
             ':account_email' => $data['email'] ?? null,
             ':role' => $data['role'] ?? 'guest',
@@ -77,6 +80,9 @@ class UserModel extends BaseModel
         $params = [':id' => $id];
 
         if (isset($data['username'])) { $fields[] = 'username = :username'; $params[':username'] = $data['username']; }
+        if (isset($data['first_name'])) { $fields[] = 'first_name = :first_name'; $params[':first_name'] = $data['first_name']; }
+        if (array_key_exists('middle_name', $data)) { $fields[] = 'middle_name = :middle_name'; $params[':middle_name'] = $data['middle_name']; }
+        if (isset($data['last_name'])) { $fields[] = 'last_name = :last_name'; $params[':last_name'] = $data['last_name']; }
         if (isset($data['password'])) { $fields[] = 'password_hash = :password_hash'; $params[':password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT); }
         if (isset($data['email'])) { $fields[] = 'account_email = :account_email'; $params[':account_email'] = $data['email']; }
         if (isset($data['role'])) { $fields[] = 'role = :role'; $params[':role'] = $data['role']; }
@@ -110,5 +116,14 @@ class UserModel extends BaseModel
             return $user;
         }
         return false;
+    }
+
+    public function getFullName(array $user): string
+    {
+        $parts = [];
+        if (!empty($user['first_name'])) $parts[] = $user['first_name'];
+        if (!empty($user['middle_name'])) $parts[] = $user['middle_name'];
+        if (!empty($user['last_name'])) $parts[] = $user['last_name'];
+        return implode(' ', $parts);
     }
 }

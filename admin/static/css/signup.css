@@ -83,6 +83,13 @@ body {
     color: #303030;
 }
 
+/* Full Name Container */
+.full-name {
+    display: flex;
+    gap: 10px;
+}
+
+
 /* Inputs */
 .form-input {
     width: 100%;

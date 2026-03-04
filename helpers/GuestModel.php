@@ -9,19 +9,43 @@ class GuestModel extends BaseModel
 
     public function create(array $data)
     {
-        $fullName = trim($data['name'] ?? ($data['first_name'] ?? ''));
-        $parts = preg_split('/\s+/', $fullName, 2);
-        $first = $parts[0] ?? '';
-        $last = $parts[1] ?? '';
+        $userId = $data['user_id'] ?? null;
+        $firstName = $data['first_name'] ?? null;
+        $lastName = $data['last_name'] ?? null;
+        $email = $data['email'] ?? $data['contact_email'] ?? null;
+        $phone = $data['phone'] ?? $data['phone_number'] ?? null;
+
+        // If user_id is provided, inherit missing info
+        if ($userId) {
+            require_once __DIR__ . '/UserModel.php';
+            $userModel = new UserModel();
+            $user = $userModel->getById($userId);
+            
+            if ($user) {
+                if (empty($firstName) && empty($lastName) && !empty($data['name'])) {
+                    $parts = preg_split('/\s+/', trim($data['name']), 2);
+                    $firstName = $parts[0] ?? '';
+                    $lastName = $parts[1] ?? '';
+                }
+
+                if (empty($firstName)) $firstName = $user['first_name'];
+                if (empty($lastName)) $lastName = $user['last_name'];
+                if (empty($email)) $email = $user['account_email'];
+            }
+        } else if (!empty($data['name'])) {
+            $parts = preg_split('/\s+/', trim($data['name']), 2);
+            $firstName = $parts[0] ?? '';
+            $lastName = $parts[1] ?? '';
+        }
 
         $sql = "INSERT INTO {$this->table} (user_id, first_name, last_name, contact_email, phone_number) VALUES (:user_id, :first_name, :last_name, :contact_email, :phone_number)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':user_id' => $data['user_id'] ?? null,
-            ':first_name' => $first,
-            ':last_name' => $last,
-            ':contact_email' => $data['email'] ?? $data['contact_email'] ?? null,
-            ':phone_number' => $data['phone'] ?? $data['phone_number'] ?? null,
+            ':user_id' => $userId,
+            ':first_name' => $firstName,
+            ':last_name' => $lastName,
+            ':contact_email' => $email,
+            ':phone_number' => $phone,
         ]);
 
         return (int)$this->pdo->lastInsertId();

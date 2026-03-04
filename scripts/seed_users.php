@@ -21,12 +21,16 @@ try {
             continue;
         }
 
-        $ins = $pdo->prepare('INSERT INTO Users (username, first_name, middle_name, last_name, password_hash, account_email, role) VALUES (:u, :fn, :mn, :ln, :p, :e, :r)');
+        // Get guest_id from Guests table by email
+        $gstmt = $pdo->prepare('SELECT guest_id FROM Guests WHERE email = :e LIMIT 1');
+        $gstmt->execute([':e' => $u['email']]);
+        $guest = $gstmt->fetch();
+        $guestId = $guest ? (int)$guest['guest_id'] : null;
+
+        $ins = $pdo->prepare('INSERT INTO Users (guest_id, username, password_hash, account_email, role) VALUES (:gid, :u, :p, :e, :r)');
         $ins->execute([
+            ':gid' => $guestId,
             ':u' => $u['username'],
-            ':fn' => $u['first_name'],
-            ':mn' => $u['middle_name'],
-            ':ln' => $u['last_name'],
             ':p' => password_hash($u['password'], PASSWORD_BCRYPT),
             ':e' => $u['email'],
             ':r' => $u['role'],

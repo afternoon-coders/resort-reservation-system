@@ -118,8 +118,7 @@ window.onload = function() {
                             <span><?php echo htmlspecialchars($u['account_email'] ?? ''); ?></span>
                         </div>
 
-                        
-                        </div>
+
                     </div>
                 </div>
             <?php endforeach; ?>

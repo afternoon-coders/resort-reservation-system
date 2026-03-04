@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Login successful
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['first_name'] = $user['first_name'] ?? null;
+            $_SESSION['last_name'] = $user['last_name'] ?? null;
             $_SESSION['full_name'] = $userModel->getFullName($user);
             $_SESSION['email'] = $user['guest_email'] ?? $user['account_email'] ?? null;
             $_SESSION['role'] = $user['role'] ?? 'guest';

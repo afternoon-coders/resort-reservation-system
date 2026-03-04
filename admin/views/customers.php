@@ -24,7 +24,7 @@ try {
     
 
     $recentUsers = $pdo->query(
-        'SELECT u.user_id, u.username, g.first_name, g.last_name, g.email as account_email, u.role 
+        'SELECT u.user_id, u.username, g.first_name, g.last_name, u.account_email, u.role 
         FROM Users u
         LEFT JOIN Guests g ON u.guest_id = g.guest_id
         WHERE u.role = "guest"
@@ -92,14 +92,24 @@ window.onload = function() {
             <?php foreach ($recentUsers as $u): ?>
                 <?php
                     $fullName = trim(implode(' ', array_filter([
-                        $u['first_name'],
-                        $u['last_name']
+                        $u['first_name'] ?? '',
+                        $u['last_name'] ?? ''
                     ])));
 
-                    $initials = strtoupper(
-                        substr($u['first_name'] ?? '', 0, 1) .
-                        substr($u['last_name'] ?? '', 0, 1)
-                    );
+                    if (empty($fullName)) {
+                        $fullName = $u['username'];
+                    }
+
+                    $initials = '';
+                    if (!empty($u['first_name'])) {
+                        $initials .= substr($u['first_name'], 0, 1);
+                        if (!empty($u['last_name'])) {
+                            $initials .= substr($u['last_name'], 0, 1);
+                        }
+                    } else {
+                        $initials = substr($u['username'], 0, 1);
+                    }
+                    $initials = strtoupper($initials);
                 ?>
                 <div class="customer-card">
                     <div class="card-top">

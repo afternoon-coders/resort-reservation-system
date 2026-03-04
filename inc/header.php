@@ -74,7 +74,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                 </div>
             </div>
 
-            <hr style="height: 0.5px; ">
+            <hr>
 
             <div class="sidebar-section">
                 <p class="admin-section-title">MANAGEMENT</p>

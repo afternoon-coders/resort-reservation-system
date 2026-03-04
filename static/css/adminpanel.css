@@ -29,6 +29,12 @@ body {
     left: 0;
 }
 
+hr {
+    border: none;         
+    height: .1px;           
+    background-color: #919191; 
+}
+
 .sidebar-section {    
     color: #919191;
     font-weight: 700;
@@ -42,10 +48,6 @@ body {
     font-weight: 600;
 }
 
-.icon {
-    fill: #919191;
-}
-
 .sidebar-header {
     display: flex;
     align-items: left;
@@ -54,6 +56,9 @@ body {
     padding: 0px 20px;
 }
 
+.sidebar-header span {
+  color: #919191;
+}
 
 .logo-icon {
   font-size: 26px;
@@ -71,7 +76,7 @@ body {
 
 .admin-section-title {
     font-size: 11px;
-    color: #78909c;
+    color: #919191;
     margin: 15px 0 10px 10px;
     letter-spacing: 1px;
 }

@@ -23,7 +23,14 @@ try {
     }
     
 
-    $recentUsers = $pdo->query('SELECT user_id, username, first_name, middle_name, last_name, account_email, role FROM Users ORDER BY user_id DESC LIMIT 8')->fetchAll();
+    $recentUsers = $pdo->query(
+        'SELECT user_id, username, first_name, middle_name, last_name, account_email, role 
+        FROM Users 
+        WHERE role = "admin"
+        ORDER BY user_id DESC 
+        LIMIT 8'
+    )->fetchAll();
+
 
 } catch (Exception $e) {
     $error = $e->getMessage();

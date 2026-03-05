@@ -12,8 +12,11 @@ class ReservationModel extends BaseModel
         try {
             $this->pdo->beginTransaction();
 
-            $sql = "INSERT INTO {$this->table} (guest_id, check_in_date, check_out_date, total_amount, status, notes) 
-                    VALUES (:guest_id, :check_in_date, :check_out_date, :total_amount, :status, :notes)";
+            $token = bin2hex(random_bytes(32));
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+            $sql = "INSERT INTO {$this->table} (guest_id, check_in_date, check_out_date, total_amount, status, notes, confirmation_token, token_expires_at) 
+                    VALUES (:guest_id, :check_in_date, :check_out_date, :total_amount, :status, :notes, :token, :expires)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':guest_id' => $data['guest_id'],
@@ -22,9 +25,14 @@ class ReservationModel extends BaseModel
                 ':total_amount' => $data['total_amount'] ?? ($data['total'] ?? 0.00),
                 ':status' => $data['status'] ?? 'Pending',
                 ':notes' => $data['notes'] ?? null,
+                ':token' => $token,
+                ':expires' => $expiresAt
             ]);
 
             $reservationId = (int)$this->pdo->lastInsertId();
+            
+            // Attach token to return data for mailing
+            $this->last_token = $token;
 
             // Handle Reservation Items (cottages)
             $cottages = [];
@@ -53,6 +61,19 @@ class ReservationModel extends BaseModel
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    public function confirmByToken(string $token)
+    {
+        $sql = "UPDATE {$this->table} SET status = 'Confirmed', confirmation_token = NULL, token_expires_at = NULL 
+                WHERE confirmation_token = :token AND token_expires_at > NOW() AND status = 'Pending'";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':token' => $token]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function getLastToken() {
+        return $this->last_token ?? null;
     }
 
     public function getById(int $id)

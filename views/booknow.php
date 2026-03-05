@@ -3,6 +3,7 @@ require_once 'helpers/RoomModel.php';
 require_once 'helpers/GuestModel.php';
 require_once 'helpers/ReservationModel.php';
 require_once 'helpers/UserModel.php';
+require_once 'auth/auth_functions.php';
 
 $roomModel = new RoomModel();
 $guestModel = new GuestModel();
@@ -44,10 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $userId = isLoggedIn() ? getCurrentUser()['user_id'] : null;
 
             if ($userId) {
-                // getByUserId now handles the join
-                $existingGuest = $guestModel->getByUserId($userId);
-                if ($existingGuest) {
-                    $guestId = $existingGuest['guest_id'];
+                // Get user info which includes guest_id
+                $user = $userModel->getById($userId);
+                if ($user && !empty($user['guest_id'])) {
+                    $guestId = $user['guest_id'];
                 }
             }
 
@@ -57,14 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'last_name' => $lName,
                     'email' => $contactEmail,
                     'phone_number' => $phone_number,
-                    'address' => '' // Can add field if needed
+                    'address' => '' 
                 ]);
             }
 
-            // ReservationModel::create now handles Reservation_Items automatically
             $reservationId = $reservationModel->create([
                 'guest_id' => $guestId,
-                'room_id' => $roomId, // Model expects 'room_id' or 'cottage_id' in data array
+                'room_id' => $roomId, 
                 'check_in_date' => $checkIn,
                 'check_out_date' => $checkOut,
                 'total_amount' => $totalAmount,
@@ -73,14 +73,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ]);
 
             if ($reservationId) {
-                $msg = "Reservation successful! Your booking ID is <strong>#{$reservationId}</strong>.";
+                $token = $reservationModel->getLastToken();
+                
+                require_once 'helpers/Mailer.php';
+                $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token);
+                
+                $msg = "Reservation submitted! Please check your email (<strong>" . htmlspecialchars($contactEmail) . "</strong>) to confirm your booking.";
+                if (!$emailSent) {
+                    $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
+                }
                 $msgType = "success";
                 $selectedRoomId = null;
             } else {
                 $msg = "Failed to create reservation. Please try again.";
                 $msgType = "error";
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $msg = "An error occurred: " . $e->getMessage();
             $msgType = "error";
         }
@@ -109,26 +117,68 @@ if (isLoggedIn()) {
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        .msg-container { 
-            padding: 16px 20px; 
-            border-radius: 12px; 
-            margin-bottom: 24px; 
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-        .success { 
-            background-color: #ecfdf5; 
-            color: #065f46; 
-            border: 1px solid #a7f3d0; 
-        }
-        .error { 
-            background-color: #fef2f2; 
-            color: #991b1b; 
-            border: 1px solid #fecaca; 
-        }
+/* Message Container Refinement */
+.msg-container {
+    padding: 20px 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-icon {
+    font-size: 1.5rem;
+    margin-top: 2px;
+}
+
+.msg-content strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.msg-content p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.success { 
+    background: #f0fdf4; 
+    color: #166534; 
+    border: 1px solid #bbf7d0; 
+}
+.error { 
+    background: #fef2f2; 
+    color: #991b1b; 
+    border: 1px solid #fecaca; 
+}
+
+/* Summary Refinement */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px dashed #e2e8f0;
+}
         
         .booknow-submit:disabled {
             background-color: #94a3b8;
@@ -190,8 +240,17 @@ if (isLoggedIn()) {
             
             <?php if ($msg): ?>
                 <div class="msg-container <?php echo $msgType; ?>">
-                    <i class="fa-solid <?php echo $msgType === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
-                    <span><?php echo $msg; ?></span>
+                    <div class="msg-icon">
+                        <?php if ($msgType === 'success'): ?>
+                            <i class="fa-solid fa-circle-check"></i>
+                        <?php else: ?>
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        <?php endif; ?>
+                    </div>
+                    <div class="msg-content">
+                        <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
+                        <p><?php echo $msg; ?></p>
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -214,27 +273,27 @@ if (isLoggedIn()) {
                         <input type="date" name="check_out" id="checkOutDate" class="booknow-input" onchange="updateSummary()" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" required>
                     </div>
                     <div>
-                        <label class="booknow-label">Number of Guests</label>
-                        <select name="guests" id="guestSelect" class="booknow-select" required>
-                            <option value="">Select guests</option>
+                        <label class="booknow-label">Room Type</label>
+                            <select name="room_id" class="booknow-select" id="roomType" onchange="updateSummary()" required>
+                            <option value="">Select a room</option>
+                            <?php foreach ($allRooms as $room): ?>
+                                <option value="<?php echo $room['cottage_id']; ?>" 
+                                        data-price="<?php echo (int)$room['base_price']; ?>"
+                                        data-max-occupancy="<?php echo (int)$room['max_occupancy']; ?>"
+                                        <?php echo ($selectedRoomId == $room['cottage_id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($room['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 
                 <div style="margin-top:16px; max-width:260px;">
-                    <label class="booknow-label">Room Type</label>
-                    <select name="room_id" class="booknow-select" id="roomType" onchange="updateSummary()" required>
-                        <option value="">Select a room</option>
-                        <?php foreach ($allRooms as $room): ?>
-                            <option value="<?php echo $room['cottage_id']; ?>" 
-                                    data-price="<?php echo (int)$room['base_price']; ?>"
-                                    data-max-occupancy="<?php echo (int)$room['max_occupancy']; ?>"
-                                    <?php echo ($selectedRoomId == $room['cottage_id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($room['name']); ?>
-                            </option>
-                        <?php endforeach; ?>
+                    <label class="booknow-label">Number of Guests</label>
+                    <select name="guests" id="guestSelect" class="booknow-select" required>
+                        <option value="">Select guests</option>
                     </select>
-                </div>
+            </div>
 
                 <div class="booknow-divider"></div>
 
@@ -345,20 +404,25 @@ if (isLoggedIn()) {
                     const total = price * diffDays;
                     totalAmountInput.value = total;
                     html = `
-                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size: 14px;">
-                            <span style="color: #475569;">${selectedOption.text} × ${diffDays} ${diffDays === 1 ? 'night' : 'nights'}</span>
-                            <span style="font-weight: 500;">₱${price.toLocaleString()}</span>
+                        <div class="summary-item">
+                            <span>${selectedOption.text}</span>
+                            <span>₱${price.toLocaleString()}</span>
                         </div>
-                        <div style="height: 1px; background: #e2e8f0; margin: 16px 0;"></div>
-                        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1.4rem; color:#0f172a; margin-top:10px;">
+                        <div class="summary-item">
+                            <span>Duration</span>
+                            <span>${diffDays} ${diffDays === 1 ? 'night' : 'nights'}</span>
+                        </div>
+                        <div class="summary-total">
                             <span>Total</span>
                             <span>₱${total.toLocaleString()}</span>
                         </div>
-                        <p style="font-size:0.8rem; color:#64748b; margin-top:10px;">
-                            <i class="fa-solid fa-info-circle"></i> Rates include service charges & government taxes.
+                        <p style="font-size:0.8rem; color:#64748b; margin-top:15px; line-height: 1.5;">
+                            <i class="fa-solid fa-circle-info" style="color: #086584; margin-right: 4px;"></i> 
+                            Includes all service charges and government taxes. No hidden fees.
                         </p>
                     `;
-                } else if (diffDays === 0) {
+                }
+ else if (diffDays === 0) {
                     html = '<p style="color:#dc2626; font-size: 14px;"><i class="fa-solid fa-triangle-exclamation"></i> Check-out date must be after check-in date.</p>';
                     totalAmountInput.value = 0;
                 } else {

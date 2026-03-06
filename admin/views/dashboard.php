@@ -104,7 +104,7 @@ window.onload = function() {
 </head>
 <body>
     <div class="">
-        <div class="admin-heade">
+        <div class="admin-header">
             <h1>Admin Dashboard</h1>
         </div>
         <?php if ($error): ?>
@@ -190,14 +190,6 @@ window.onload = function() {
                 </table>
             <?php endif; ?>
         </div>
-
-
-        <div style="margin-top:20px;" class="card">
-            <h3>Rooms</h3>
-            <p class="muted">Quick links to manage rooms.</p>
-            <p><a href="index.php?page=manage_rooms">Open Manage Rooms</a></p>
-        </div>
-    </div>
 
 </body>
 </html>

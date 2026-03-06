@@ -40,7 +40,7 @@ header {
     background:#ffffff; 
     border: 1px solid #F1EEE7;
     padding: 16px; 
-    border-radius: 2px; 
+    border-radius: 14px; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -48,8 +48,8 @@ header {
     background:#fff; 
     border: 1px solid #F1EEE7;
     padding: 25px 16px; 
-    border-radius: 2px; 
-    box-shadow:0 1px 3px rgba(0,0,0,0.05); 
+    border-radius: 14px; 
+    box-shadow: 0 2px 3px rgba(0,0,0,0.05); 
 
     flex: 1 1 00px; 
 }

@@ -13,14 +13,19 @@ body {
     margin: 0;
 }
 
+header {
+    font-size: 20px;
+    margin-left: 5px;
+}
+
 .wrapper {
     display: flex;
     min-height: 100vh;
 }
 
 .main-content {
-    margin-left: 230px;
-    padding: 30px;
+    margin-left: 225px;
+    padding: 25px;
     width: 100%;
 }
 
@@ -35,15 +40,15 @@ body {
     background:#ffffff; 
     border: 1px solid #F1EEE7;
     padding: 16px; 
-    border-radius: 10px; 
+    border-radius: 2px; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .card-stat { 
     background:#fff; 
     border: 1px solid #F1EEE7;
-    padding: 30px 16px; 
-    border-radius: 10px; 
+    padding: 25px 16px; 
+    border-radius: 2px; 
     box-shadow:0 1px 3px rgba(0,0,0,0.05); 
 
     flex: 1 1 00px; 
@@ -106,28 +111,38 @@ td {
     min-height: 25px;
     display: flex;
     justify-content: flex-start;
+    gap: 2px;
     padding: 0px 0px;
 }
 
 /* Action button */
 .action-btn {
+    background-color: transparent;
     display: flex;
     justify-content: flex-start;
     justify-content: center;
 }
 
-.refresh-btn {
-    height: 50px;
+.edit-btn {
+    height: 25px;
     width: 25px;
-    padding: 10px 0px;
+    padding: 2px 0px;
+    border: none;
+    background-color: transparent;
+}
+
+.refresh-btn {
+    height: 25px;
+    width: 25px;
+    padding: 2px 0px;
     border: none;
     background-color: transparent;
 }
 
 .delete-btn {
-    height: 50px;
+    height: 25px;
     width: 25px;
-    padding: 10px 0px;
+    padding: 2px 0px;
     border: none;
     background-color: transparent;
 }
@@ -182,17 +197,19 @@ td {
 /* ========================= */
 
 .customers-page {
-    padding: 40px;
+    padding: 25px;
     background: #f5f6f8;
     min-height: 100vh;
 }
 
-.page-header h1 {
-    font-size: 32px;
+.admin-header h1 {
+    font-size: 25px;
     margin-bottom: 6px;
+    margin-left: 5px;
+    color: #303030;
 }
 
-.page-header p {
+.admin-header p {
     color: #6b7280;
     margin-bottom: 25px;
 }
@@ -208,7 +225,7 @@ td {
 
 
 .search-wrapper {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .search-input {
@@ -268,7 +285,7 @@ td {
 
 .view-btn {
     padding: 6px 14px;
-    border-radius: 10px;
+    border-radius: 2px;
     border: 1px solid #d1d5db;
     background: #f9fafb;
     cursor: pointer;
@@ -280,7 +297,7 @@ td {
 }
 
 .customer-card h3 {
-    margin-bottom: 10px;
+    margin-bottom: 2px;
 }
 
 .customer-info {

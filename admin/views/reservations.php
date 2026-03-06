@@ -212,8 +212,9 @@ try {
 </head>
 <body>
     <div class="">
-        
-        <h1>Reservations</h1>
+        <div class="admin-header">
+            <h1>Reservations</h1>
+        </div>
         <?php if ($error): ?>
             <div style="padding:12px;background:#fdecea;border:1px solid #f5c2c2;color:#6b0b0b;border-radius:4px;margin-bottom:12px;">Error: <?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>

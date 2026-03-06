@@ -70,7 +70,7 @@ window.onload = function() {
 <body>
 
 
-    <div class="page-header">
+    <div class="admin-header">
         <h1>Customers</h1>
         <p>View and manage customer information</p>
     </div>

@@ -39,6 +39,7 @@ try {
         }
     }
     
+    
     // Calculate Stats
     $roomsTotal = $pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
     $roomsAvailable = $pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Available'")->fetchColumn();
@@ -46,6 +47,14 @@ try {
     $reservationsPending = $pdo->query("SELECT COUNT(*) FROM Reservations WHERE status = 'Pending'")->fetchColumn();
     $usersTotal = $pdo->query("SELECT COUNT(*) FROM Users")->fetchColumn();
     $paymentsTotal = $pdo->query("SELECT SUM(amount_paid) FROM Payments")->fetchColumn() ?: 0.0;
+
+    // Get current month revenue
+    $monthlyRevenue = $pdo->query(
+        "SELECT SUM(amount_paid) AS revenue
+        FROM Payments
+        WHERE MONTH(payment_date) = MONTH(CURRENT_DATE())
+        AND YEAR(payment_date) = YEAR(CURRENT_DATE())"
+    )->fetch();
 
     // Recent reservations - Using GROUP_CONCAT for multiple cottages
     $recentReservations = $pdo->query(
@@ -113,28 +122,32 @@ window.onload = function() {
 
         <div class="grid">
             <div class="card-stat">
-                <h2><?php echo $roomsTotal; ?></h2>
-                <div class="muted">Total Cottages</div>
-            </div>
-            <div class="card-stat">
-                <h2><?php echo $roomsAvailable; ?></h2>
-                <div class="muted">Available Cottages</div>
-            </div>
-            <div class="card-stat">
                 <h2><?php echo $reservationsTotal; ?></h2>
-                <div class="muted">Total Reservations</div>
+                <div class="card-stat-content">
+                    <div class="muted">Total Reservations</div>
+                    <img src="static/img/adminpanel_icons/reservation.svg" alt="">
+                </div>
             </div>
             <div class="card-stat">
-                <h2><?php echo $reservationsPending; ?></h2>
-                <div class="muted">Pending Reservations</div>
+                    <h2><?php echo ($roomsTotal-$reservationsTotal) . " / " . ($roomsAvailable); ?></h2>
+                <div class="card-stat-content">
+                    <div class="muted">Total Cottages</div>
+                    <img src="static/img/adminpanel_icons/bed.svg" alt="">
+                </div>
             </div>
             <div class="card-stat">
-                <h2><?php echo $usersTotal; ?></h2>
-                <div class="muted">Registered Users</div>
+                    <h2><?php echo $usersTotal; ?></h2>
+                <div class="card-stat-content">
+                    <div class="muted">Total Guests</div>
+                    <img src="static/img/adminpanel_icons/people.svg" alt="">
+                </div>
             </div>
             <div class="card-stat">
-                <h2>&#8369; <?php echo number_format((float)$paymentsTotal,2); ?></h2>
-                <div class="muted">Total Payments</div>
+                    <h2>&#8369; <?php echo $monthlyRevenue['revenue']; ?></h2>
+                <div class="card-stat-content">
+                    <div class="muted">Monthly Revenue</div>
+                    <img src="static/img/adminpanel_icons/dollar.svg" alt="">
+                </div>
             </div>
         </div>
 

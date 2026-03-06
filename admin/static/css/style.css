@@ -35,6 +35,17 @@ header {
     flex-wrap:wrap; 
 }
 
+.card-stat-content {
+    display: flex;
+}
+
+.card-stat-content img {
+    margin-left: auto;
+    background-color: #DADADA;
+    padding: 5px 5px;
+    border-radius: 8px;
+}
+
 .card { 
     width: 100%;
     background:#ffffff; 
@@ -45,11 +56,12 @@ header {
 }
 
 .card-stat { 
+    height: 150px;
     background:#fff; 
     border: 1px solid #F1EEE7;
     padding: 25px 16px; 
     border-radius: 14px; 
-    box-shadow: 0 2px 3px rgba(0,0,0,0.05); 
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
 
     flex: 1 1 00px; 
 }
@@ -204,7 +216,7 @@ td {
 
 .admin-header h1 {
     font-size: 25px;
-    margin-bottom: 6px;
+    margin-bottom: 20px;
     margin-left: 5px;
     color: #303030;
 }

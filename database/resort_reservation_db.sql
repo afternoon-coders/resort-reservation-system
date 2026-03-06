@@ -57,6 +57,8 @@ CREATE TABLE Reservations (
     total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     status ENUM('Pending', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled') DEFAULT 'Pending',
     notes TEXT,
+    confirmation_token VARCHAR(255),
+    token_expires_at DATETIME,
     CONSTRAINT chk_dates CHECK (check_out_date > check_in_date),
     FOREIGN KEY (guest_id) REFERENCES Guests(guest_id)
 );

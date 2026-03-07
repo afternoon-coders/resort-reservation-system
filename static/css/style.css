@@ -1149,9 +1149,9 @@ body {
     flex-direction: column;
 }
 
-.form-group label {
+.booknow-label {
     font-size: 12px;
-    margin: 10px 2px 5px 5px;
+    margin: 5px 3px;
     color: #333;
     font-weight: bold;
 }

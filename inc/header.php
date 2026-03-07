@@ -111,7 +111,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                         <span>
                             <img src="/admin/static/img/adminpanel_icons/bed.svg" alt="">
                         </span>
-                        <a href="/admin/index.php?page=manage_rooms">Rooms</a>
+                        <a href="/admin/index.php?page=manage_rooms">Cottages</a>
                     </li>
                     <li>
                         <span>

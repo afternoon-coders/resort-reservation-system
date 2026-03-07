@@ -13,6 +13,15 @@ $userModel = new UserModel();
 $selectedRoomId = $_GET['room_id'] ?? null;
 $allRooms = $roomModel->getAll(['status' => 'available']);
 
+$uniqueTypes = [];
+$uniqueRooms = [];
+foreach ($allRooms as $room) {
+    if (!in_array($room['type_id'], $uniqueTypes)) {
+        $uniqueTypes[] = $room['type_id'];
+        $uniqueRooms[] = $room;
+    }
+}
+
 $firstName = '';
 $lastName = '';
 $email = '';
@@ -52,41 +61,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
             }
 
-            if (!$guestId) {
-                $guestId = $guestModel->create([
-                    'first_name' => $fName,
-                    'last_name' => $lName,
-                    'email' => $contactEmail,
-                    'phone_number' => $phone_number,
-                    'address' => '' 
-                ]);
-            }
+            $assignedCottageId = $reservationModel->getAvailableCottageByType((int)$roomId, $checkIn, $checkOut);
 
-            $reservationId = $reservationModel->create([
-                'guest_id' => $guestId,
-                'room_id' => $roomId, 
-                'check_in_date' => $checkIn,
-                'check_out_date' => $checkOut,
-                'total_amount' => $totalAmount,
-                'status' => 'Pending',
-                'notes' => $specialRequests
-            ]);
-
-            if ($reservationId) {
-                $token = $reservationModel->getLastToken();
-                
-                require_once 'helpers/Mailer.php';
-                $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token);
-                
-                $msg = "Reservation submitted! Please check your email (<strong>" . htmlspecialchars($contactEmail) . "</strong>) to confirm your booking.";
-                if (!$emailSent) {
-                    $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
-                }
-                $msgType = "success";
-                $selectedRoomId = null;
-            } else {
-                $msg = "Failed to create reservation. Please try again.";
+            if (!$assignedCottageId) {
+                $msg = "Sorry, there are no cottages of this type available for the chosen dates. Please select different dates or another cottage type.";
                 $msgType = "error";
+            } else {
+                if (!$guestId) {
+                    $guestId = $guestModel->create([
+                        'first_name' => $fName,
+                        'last_name' => $lName,
+                        'email' => $contactEmail,
+                        'phone_number' => $phone_number,
+                        'address' => '' 
+                    ]);
+                }
+
+                $reservationId = $reservationModel->create([
+                    'guest_id' => $guestId,
+                    'room_id' => $assignedCottageId, 
+                    'check_in_date' => $checkIn,
+                    'check_out_date' => $checkOut,
+                    'total_amount' => $totalAmount,
+                    'status' => 'Pending',
+                    'notes' => $specialRequests
+                ]);
+
+                if ($reservationId) {
+                    $token = $reservationModel->getLastToken();
+                    
+                    require_once 'helpers/Mailer.php';
+                    $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token);
+                    
+                    $msg = "Reservation submitted! Please check your email (<strong>" . htmlspecialchars($contactEmail) . "</strong>) to confirm your booking.";
+                    if (!$emailSent) {
+                        $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
+                    }
+                    $msgType = "success";
+                    $selectedRoomId = null;
+                } else {
+                    $msg = "Failed to create reservation. Please try again.";
+                    $msgType = "error";
+                }
             }
         } catch (\Throwable $e) {
             $msg = "An error occurred: " . $e->getMessage();
@@ -266,24 +282,16 @@ if (isLoggedIn()) {
                 <div class="booknow-grid-3">
                     <div>
                         <label class="booknow-label">Check-in Date</label>
-                        <input type="date" name="check_in" id="checkInDate" class="booknow-input" onchange="updateSummary()" min="<?php echo $today; ?>" required>
+                        <input type="date" name="check_in" id="checkInDate" class="booknow-input" min="<?php echo $today; ?>" required>
                     </div>
                     <div>
                         <label class="booknow-label">Check-out Date</label>
-                        <input type="date" name="check_out" id="checkOutDate" class="booknow-input" onchange="updateSummary()" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" required>
+                        <input type="date" name="check_out" id="checkOutDate" class="booknow-input" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" required>
                     </div>
                     <div>
                         <label class="booknow-label">Room Type</label>
                             <select name="room_id" class="booknow-select" id="roomType" onchange="updateSummary()" required>
-                            <option value="">Select a room</option>
-                            <?php foreach ($allRooms as $room): ?>
-                                <option value="<?php echo $room['cottage_id']; ?>" 
-                                        data-price="<?php echo (int)$room['base_price']; ?>"
-                                        data-max-occupancy="<?php echo (int)$room['max_occupancy']; ?>"
-                                        <?php echo ($selectedRoomId == $room['cottage_id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($room['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="">Select dates first</option>
                         </select>
                     </div>
                 </div>
@@ -442,6 +450,43 @@ if (isLoggedIn()) {
         }
     }
 
+    function fetchAvailableRooms() {
+        const checkIn = document.getElementById('checkInDate').value;
+        const checkOut = document.getElementById('checkOutDate').value;
+        const roomSelect = document.getElementById('roomType');
+        
+        if (!checkIn || !checkOut) {
+            roomSelect.innerHTML = '<option value="">Select dates first</option>';
+            updateSummary();
+            return;
+        }
+
+        roomSelect.innerHTML = '<option value="">Loading available rooms...</option>';
+        roomSelect.disabled = true;
+
+        fetch(`/api/get_available_rooms.php?check_in=${checkIn}&check_out=${checkOut}`)
+            .then(response => response.json())
+            .then(data => {
+                roomSelect.disabled = false;
+                if (data.success && data.types.length > 0) {
+                    let options = '<option value="">Select a room</option>';
+                    data.types.forEach(type => {
+                        options += `<option value="${type.type_id}" data-price="${type.base_price}" data-max-occupancy="${type.max_occupancy}">${type.name}</option>`;
+                    });
+                    roomSelect.innerHTML = options;
+                } else {
+                    roomSelect.innerHTML = '<option value="">No rooms available for these dates</option>';
+                }
+                updateSummary();
+            })
+            .catch(error => {
+                console.error('Error fetching rooms:', error);
+                roomSelect.disabled = false;
+                roomSelect.innerHTML = '<option value="">Error sorting rooms. Please try again.</option>';
+                updateSummary();
+            });
+    }
+
     // Handle form loading state
     document.getElementById('reservationForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('submitBtn');
@@ -464,8 +509,10 @@ if (isLoggedIn()) {
                 checkOutInput.value = checkOutInput.min;
             }
         }
-        updateSummary();
+        fetchAvailableRooms();
     });
+
+    document.getElementById('checkOutDate').addEventListener('change', fetchAvailableRooms);
 
     // Initialize summary if a room is pre-selected
     document.addEventListener('DOMContentLoaded', updateSummary);

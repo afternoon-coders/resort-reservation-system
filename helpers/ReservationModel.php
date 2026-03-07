@@ -13,7 +13,14 @@ class ReservationModel extends BaseModel
             $this->pdo->beginTransaction();
 
             $token = bin2hex(random_bytes(32));
-            $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+            // Find an available cottage for this type using FOR UPDATE to lock the row
+            $cottageId = $this->getAvailableCottageByType((int)$data['room_id'], $data['check_in_date'], $data['check_out_date'], true);
+            
+            if (!$cottageId) {
+                throw new Exception("Sorry, there are no cottages of this type available for the chosen dates.");
+            }
 
             $sql = "INSERT INTO {$this->table} (guest_id, check_in_date, check_out_date, total_amount, status, notes, confirmation_token, token_expires_at) 
                     VALUES (:guest_id, :check_in_date, :check_out_date, :total_amount, :status, :notes, :token, :expires)";
@@ -36,13 +43,7 @@ class ReservationModel extends BaseModel
 
             // Handle Reservation Items (cottages)
             $cottages = [];
-            if (isset($data['cottage_id'])) {
-                $cottages[] = ['id' => $data['cottage_id'], 'price' => $data['price_at_booking'] ?? ($data['total_amount'] ?? 0)];
-            } elseif (isset($data['room_id'])) {
-                $cottages[] = ['id' => $data['room_id'], 'price' => $data['price_at_booking'] ?? ($data['total_amount'] ?? 0)];
-            } elseif (isset($data['items']) && is_array($data['items'])) {
-                $cottages = $data['items'];
-            }
+            $cottages[] = ['id' => $cottageId, 'price' => $data['price_at_booking'] ?? ($data['total_amount'] ?? 0)];
 
             $itemSql = "INSERT INTO Reservation_Items (reservation_id, cottage_id, price_at_booking) VALUES (:rid, :cid, :price)";
             $itemStmt = $this->pdo->prepare($itemSql);
@@ -50,8 +51,8 @@ class ReservationModel extends BaseModel
             foreach ($cottages as $c) {
                 $itemStmt->execute([
                     ':rid' => $reservationId,
-                    ':cid' => $c['id'] ?? $c['cottage_id'],
-                    ':price' => $c['price'] ?? $c['price_at_booking'] ?? 0.00,
+                    ':cid' => $c['id'],
+                    ':price' => $c['price'] ?? 0.00,
                 ]);
             }
 
@@ -74,6 +75,53 @@ class ReservationModel extends BaseModel
 
     public function getLastToken() {
         return $this->last_token ?? null;
+    }
+
+    public function isCottageAvailable(int $cottageId, string $checkIn, string $checkOut)
+    {
+        $sql = "SELECT COUNT(*) FROM Reservation_Items ri
+                JOIN Reservations r ON ri.reservation_id = r.reservation_id
+                WHERE ri.cottage_id = :cottage_id
+                AND r.status NOT IN ('Cancelled')
+                AND (r.status != 'Pending' OR r.token_expires_at > NOW())
+                AND r.check_in_date < :check_out
+                AND r.check_out_date > :check_in";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':cottage_id' => $cottageId,
+            ':check_in' => $checkIn,
+            ':check_out' => $checkOut
+        ]);
+        return (int)$stmt->fetchColumn() === 0;
+    }
+
+    public function getAvailableCottageByType(int $typeId, string $checkIn, string $checkOut, bool $lock = false)
+    {
+        $sql = "SELECT c.cottage_id 
+                FROM Cottages c
+                WHERE c.type_id = :type_id AND c.status = 'Available'
+                AND c.cottage_id NOT IN (
+                    SELECT ri.cottage_id 
+                    FROM Reservation_Items ri
+                    JOIN Reservations r ON ri.reservation_id = r.reservation_id
+                    WHERE r.status NOT IN ('Cancelled')
+                    AND (r.status != 'Pending' OR r.token_expires_at > NOW())
+                    AND r.check_in_date < :check_out
+                    AND r.check_out_date > :check_in
+                )
+                LIMIT 1";
+                
+        if ($lock) {
+            $sql .= " FOR UPDATE SKIP LOCKED";
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':type_id' => $typeId,
+            ':check_in' => $checkIn,
+            ':check_out' => $checkOut
+        ]);
+        return $stmt->fetchColumn() ?: null;
     }
 
     public function getById(int $id)

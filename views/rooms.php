@@ -6,6 +6,16 @@ $roomModel = new RoomModel();
 // Use the new status ENUM 'Available'
 $dbRooms = $roomModel->getAll(['status' => 'Available']);
 
+// Filter to show only unique cottage types
+$uniqueTypes = [];
+$uniqueRooms = [];
+foreach ($dbRooms as $room) {
+    if (!in_array($room['type_id'], $uniqueTypes)) {
+        $uniqueTypes[] = $room['type_id'];
+        $uniqueRooms[] = $room;
+    }
+}
+
 // Format rooms for JavaScript
 $formattedRooms = array_map(function($room) {
     return [
@@ -16,7 +26,7 @@ $formattedRooms = array_map(function($room) {
         'description' => $room['description'] ?? 'Beautiful ' . ($room['name'] ?? 'cottage') . ' with premium amenities and stunning views.',
         'beds' => (int)($room['max_occupancy'] ?? 0)
     ];
-}, $dbRooms);
+}, $uniqueRooms);
 ?>
 
 <!DOCTYPE html>

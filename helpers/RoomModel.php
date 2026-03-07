@@ -68,6 +68,29 @@ class RoomModel extends BaseModel
         return $stmt->fetchAll();
     }
 
+    public function getAvailableTypes(string $checkIn, string $checkOut)
+    {
+        $sql = "SELECT DISTINCT t.type_id, t.type_name as name, t.description, c.base_price, c.max_occupancy
+                FROM Cottages c
+                JOIN Cottage_Types t ON c.type_id = t.type_id
+                WHERE c.status = 'Available'
+                AND c.cottage_id NOT IN (
+                    SELECT ri.cottage_id 
+                    FROM Reservation_Items ri
+                    JOIN Reservations r ON ri.reservation_id = r.reservation_id
+                    WHERE r.status NOT IN ('Cancelled')
+                    AND (r.status != 'Pending' OR r.token_expires_at > NOW())
+                    AND r.check_in_date < :check_out
+                    AND r.check_out_date > :check_in
+                )";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':check_in' => $checkIn,
+            ':check_out' => $checkOut
+        ]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function update(int $id, array $data)
     {
         $fields = [];

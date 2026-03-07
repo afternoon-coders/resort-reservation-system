@@ -15,6 +15,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="icon" type="image/png" href="/static/img/lepaseo_logo.png">
+    
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/adminpanel.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -98,13 +99,13 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                 <ul class="">
                     <li>
                         <span>
-                            <img class="icon" src="/admin/static/img/adminpanel_icons/dashboard.svg" alt="" >
+                            <img src="/admin/static/img/adminpanel_icons/dashboard.svg" alt="" >
                         </span>
                         <a href="/admin/index.php?page=dashboard">Dashboard</a>
                     </li>
                     <li>
                         <span>
-                            <img class="icon" src="/admin/static/img/adminpanel_icons/reservation.svg" alt="">
+                            <img src="/admin/static/img/adminpanel_icons/reservation.svg" alt="">
                         </span>
                         <a href="/admin/index.php?page=reservations">Reservations</a>
                     </li>
@@ -157,7 +158,7 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                 <!-- Login / Logout Section -->
                 <?php if ($isLoggedIn): ?>
                     <li class="user-welcome">
-                        <span>Welcome,<br> <?php echo htmlspecialchars($user['first_name'] ?: 'User'); ?></span>
+                        <span><?php echo htmlspecialchars($user['first_name'] ?: 'User'); ?></span>
                     </li>
                     <li>
                         <span>  

@@ -246,11 +246,10 @@ td {
 /* ===================== */
 /* ======  Modal  ====== */
 /* ===================== */
-
 .manage-room-parent {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 180px);
+    grid-template-rows: 180px 1fr;
     grid-column-gap: 0px;
     grid-row-gap: 0px;
 }
@@ -266,6 +265,7 @@ td {
 .div5 { 
     grid-area: 2 / 3 / 4 / 4; 
     margin: 0px 10px;
+    margin-bottom: 20px;
 }
         
 .add-room-card {

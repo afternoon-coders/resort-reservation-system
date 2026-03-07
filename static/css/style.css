@@ -156,7 +156,7 @@ body {
 .dropdown-menu {
     position: absolute;
     right: 0;
-    top: 110%;
+    margin-top: 10px;
     background: #fff;
     min-width: 160px;
     border-radius: 8px;

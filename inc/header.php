@@ -4,6 +4,13 @@ if (file_exists(__DIR__ . '/../auth/auth_functions.php')) {
     require_once __DIR__ . '/../auth/auth_functions.php';
 }
 
+// Auto-run reservation status logic on every page load
+if (file_exists(__DIR__ . '/../helpers/ReservationModel.php')) {
+    require_once __DIR__ . '/../helpers/ReservationModel.php';
+    $reservationModel = new ReservationModel();
+    $reservationModel->autoUpdateStatuses();
+}
+
 // Check login status
 $isLoggedIn = isLoggedIn();
 $user = $isLoggedIn ? getCurrentUser() : null;

@@ -15,6 +15,9 @@ CREATE TABLE Guests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Optimize email lookups, especially for Guest checkouts
+CREATE INDEX idx_guest_email ON Guests(email);
+
 -- 2. Users Table (The Authentication Layer)
 -- Links to Guests if they have an account. guest_id is NULL for Admins/Staff.
 CREATE TABLE Users (
@@ -28,6 +31,9 @@ CREATE TABLE Users (
     last_login TIMESTAMP,
     FOREIGN KEY (guest_id) REFERENCES Guests(guest_id) ON DELETE SET NULL
 );
+
+-- Optimize user lookups by username
+CREATE INDEX idx_user_username ON Users(username);
 
 -- 3. Cottage_Types
 CREATE TABLE Cottage_Types (
@@ -47,6 +53,9 @@ CREATE TABLE Cottages (
     FOREIGN KEY (type_id) REFERENCES Cottage_Types(type_id)
 );
 
+-- Optimize queries searching for available cottages
+CREATE INDEX idx_cottage_status ON Cottages(status);
+
 -- 5. Reservations (The "Folder" for a booking)
 CREATE TABLE Reservations (
     reservation_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -62,6 +71,10 @@ CREATE TABLE Reservations (
     CONSTRAINT chk_dates CHECK (check_out_date > check_in_date),
     FOREIGN KEY (guest_id) REFERENCES Guests(guest_id)
 );
+
+-- Optimize date range queries and active reservation checks
+CREATE INDEX idx_reservation_dates ON Reservations(check_in_date, check_out_date);
+CREATE INDEX idx_reservation_status ON Reservations(status);
 
 -- 6. Reservation_Items (Support for multi-cottage bookings)
 CREATE TABLE Reservation_Items (

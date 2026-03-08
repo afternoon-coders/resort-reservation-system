@@ -4,10 +4,10 @@ require_once __DIR__ . '/BaseModel.php';
 
 class UserModel extends BaseModel
 {
-    protected $table = 'Users';
-    protected $primaryKey = 'user_id';
+    protected string $table = 'Users';
+    protected string $primaryKey = 'user_id';
 
-    public function create(array $data)
+    public function create(array $data): int
     {
         $sql = "INSERT INTO {$this->table} (guest_id, username, password_hash, account_email, role) VALUES (:guest_id, :username, :password_hash, :account_email, :role)";
         $stmt = $this->pdo->prepare($sql);
@@ -22,7 +22,7 @@ class UserModel extends BaseModel
         return (int)$this->pdo->lastInsertId();
     }
 
-    public function getById(int $id)
+    public function getById(int $id): array|false
     {
         $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email, g.phone_number, g.address 
                 FROM {$this->table} u 
@@ -33,7 +33,7 @@ class UserModel extends BaseModel
         return $stmt->fetch();
     }
 
-    public function getByUsername(string $username)
+    public function getByUsername(string $username): array|false
     {
         $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email, g.phone_number, g.address 
                 FROM {$this->table} u 
@@ -44,7 +44,7 @@ class UserModel extends BaseModel
         return $stmt->fetch();
     }
 
-    public function getByEmail(string $email)
+    public function getByEmail(string $email): array|false
     {
         $sql = "SELECT u.*, g.first_name, g.last_name, g.email as guest_email, g.phone_number, g.address 
                 FROM {$this->table} u 
@@ -55,7 +55,7 @@ class UserModel extends BaseModel
         return $stmt->fetch();
     }
 
-    public function getAll(array $opts = [])
+    public function getAll(array $opts = []): array
     {
         $sql = "SELECT u.*, g.first_name, g.last_name 
                 FROM {$this->table} u 
@@ -93,7 +93,7 @@ class UserModel extends BaseModel
         return $stmt->fetchAll();
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): bool
     {
         $fields = [];
         $params = [':id' => $id];
@@ -114,19 +114,19 @@ class UserModel extends BaseModel
         return $stmt->execute($params);
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         $sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey} = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
 
-    public function verifyPassword(string $password, string $hash)
+    public function verifyPassword(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
     }
 
-    public function authenticate(string $username, string $password)
+    public function authenticate(string $username, string $password): array|false
     {
         $user = $this->getByUsername($username);
         if ($user && $this->verifyPassword($password, $user['password_hash'])) {

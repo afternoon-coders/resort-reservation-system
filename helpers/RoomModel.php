@@ -5,8 +5,8 @@ require_once __DIR__ . '/BaseModel.php';
 class RoomModel extends BaseModel
 {
     // Adapted to new schema: Cottages table
-    protected $table = 'Cottages';
-    protected $primaryKey = 'cottage_id';
+    protected string $table = 'Cottages';
+    protected string $primaryKey = 'cottage_id';
 
     public function create(array $data)
     {

@@ -4,16 +4,15 @@ require_once __DIR__ . '/BaseModel.php';
 
 class ReservationModel extends BaseModel
 {
-    protected $table = 'Reservations';
-    protected $primaryKey = 'reservation_id';
+    protected string $table = 'Reservations';
+    protected string $primaryKey = 'reservation_id';
 
-    public function create(array $data)
+    public function create(array $data): int
     {
         try {
             $this->pdo->beginTransaction();
 
             $token = bin2hex(random_bytes(32));
-            $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
             // Find an available cottage for this type using FOR UPDATE to lock the row
             $cottageId = $this->getAvailableCottageByType((int)$data['room_id'], $data['check_in_date'], $data['check_out_date'], true);
@@ -23,7 +22,7 @@ class ReservationModel extends BaseModel
             }
 
             $sql = "INSERT INTO {$this->table} (guest_id, check_in_date, check_out_date, total_amount, status, notes, confirmation_token, token_expires_at) 
-                    VALUES (:guest_id, :check_in_date, :check_out_date, :total_amount, :status, :notes, :token, :expires)";
+                    VALUES (:guest_id, :check_in_date, :check_out_date, :total_amount, :status, :notes, :token, DATE_ADD(NOW(), INTERVAL 15 MINUTE))";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':guest_id' => $data['guest_id'],
@@ -32,8 +31,7 @@ class ReservationModel extends BaseModel
                 ':total_amount' => $data['total_amount'] ?? ($data['total'] ?? 0.00),
                 ':status' => $data['status'] ?? 'Pending',
                 ':notes' => $data['notes'] ?? null,
-                ':token' => $token,
-                ':expires' => $expiresAt
+                ':token' => $token
             ]);
 
             $reservationId = (int)$this->pdo->lastInsertId();
@@ -64,7 +62,7 @@ class ReservationModel extends BaseModel
         }
     }
 
-    public function confirmByToken(string $token)
+    public function confirmByToken(string $token): bool
     {
         $sql = "UPDATE {$this->table} SET status = 'Confirmed', confirmation_token = NULL, token_expires_at = NULL 
                 WHERE confirmation_token = :token AND token_expires_at > NOW() AND status = 'Pending'";
@@ -73,11 +71,11 @@ class ReservationModel extends BaseModel
         return $stmt->rowCount() > 0;
     }
 
-    public function getLastToken() {
+    public function getLastToken(): ?string {
         return $this->last_token ?? null;
     }
 
-    public function isCottageAvailable(int $cottageId, string $checkIn, string $checkOut)
+    public function isCottageAvailable(int $cottageId, string $checkIn, string $checkOut): bool
     {
         $sql = "SELECT COUNT(*) FROM Reservation_Items ri
                 JOIN Reservations r ON ri.reservation_id = r.reservation_id
@@ -95,7 +93,7 @@ class ReservationModel extends BaseModel
         return (int)$stmt->fetchColumn() === 0;
     }
 
-    public function getAvailableCottageByType(int $typeId, string $checkIn, string $checkOut, bool $lock = false)
+    public function getAvailableCottageByType(int $typeId, string $checkIn, string $checkOut, bool $lock = false): ?int
     {
         $sql = "SELECT c.cottage_id 
                 FROM Cottages c
@@ -124,7 +122,7 @@ class ReservationModel extends BaseModel
         return $stmt->fetchColumn() ?: null;
     }
 
-    public function getById(int $id)
+    public function getById(int $id): array|false
     {
         $sql = "SELECT r.*, g.first_name, g.last_name, g.email 
                 FROM {$this->table} r 
@@ -148,7 +146,7 @@ class ReservationModel extends BaseModel
         return $res;
     }
 
-    public function getAll(array $opts = [])
+    public function getAll(array $opts = []): array
     {
         $sql = "SELECT r.*, g.first_name, g.last_name FROM {$this->table} r JOIN Guests g ON r.guest_id = g.guest_id";
         $params = [];
@@ -181,7 +179,7 @@ class ReservationModel extends BaseModel
         return $stmt->fetchAll();
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): bool
     {
         $fields = [];
         $params = [':id' => $id];
@@ -203,10 +201,32 @@ class ReservationModel extends BaseModel
         return $stmt->execute($params);
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         $sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey} = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * Automatically updates the statuses of reservations based on the current date.
+     * - Cancels Pending reservations if the check-in date has passed.
+     * - Checks-out Checked-In reservations if the check-out date has passed.
+     */
+    public function autoUpdateStatuses(): void
+    {
+        // 1. Auto-Cancel
+        // If they did not confirm before the day of their supposedly arrival
+        $cancelSql = "UPDATE {$this->table} 
+                      SET status = 'Cancelled' 
+                      WHERE status = 'Pending' AND check_in_date <= CURDATE()";
+        $this->pdo->exec($cancelSql);
+
+        // 2. Auto-Checkout 
+        // If the user is checked-in and the day of their checkout automatically checkout the guest after a day of their supposedly checkout
+        $checkoutSql = "UPDATE {$this->table} 
+                        SET status = 'Checked-Out' 
+                        WHERE status = 'Checked-In' AND check_out_date < CURDATE()";
+        $this->pdo->exec($checkoutSql);
     }
 }

@@ -4,8 +4,8 @@ require_once __DIR__ . '/BaseModel.php';
 
 class GuestModel extends BaseModel
 {
-    protected $table = 'Guests';
-    protected $primaryKey = 'guest_id';
+    protected string $table = 'Guests';
+    protected string $primaryKey = 'guest_id';
 
     public function create(array $data)
     {

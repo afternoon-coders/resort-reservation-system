@@ -4,8 +4,8 @@ require_once __DIR__ . '/BaseModel.php';
 
 class ServiceModel extends BaseModel
 {
-    protected $table = 'services';
-    protected $primaryKey = 'service_id';
+    protected string $table = 'services';
+    protected string $primaryKey = 'service_id';
 
     public function create(array $data)
     {

@@ -4,8 +4,8 @@ require_once __DIR__ . '/BaseModel.php';
 
 class PaymentModel extends BaseModel
 {
-    protected $table = 'Payments';
-    protected $primaryKey = 'payment_id';
+    protected string $table = 'Payments';
+    protected string $primaryKey = 'payment_id';
 
     public function create(array $data)
     {

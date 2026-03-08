@@ -4,22 +4,22 @@ require_once __DIR__ . '/DB.php';
 
 abstract class BaseModel
 {
-    protected $pdo;
-    protected $table;
-    protected $primaryKey = 'id';
+    protected \PDO $pdo;
+    protected string $table;
+    protected string $primaryKey = 'id';
 
     public function __construct()
     {
         $this->pdo = DB::getPDO();
     }
 
-    protected function fetchAll($stmt)
+    protected function fetchAll(PDOStatement $stmt): array
     {
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
-    protected function fetchOne($stmt)
+    protected function fetchOne(PDOStatement $stmt): array|false
     {
         $stmt->execute();
         return $stmt->fetch();

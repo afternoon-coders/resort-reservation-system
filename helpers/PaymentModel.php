@@ -79,7 +79,7 @@ class PaymentModel extends BaseModel
         if (isset($data['amount'])) { $fields[] = 'amount_paid = :amount_paid'; $params[':amount_paid'] = $data['amount']; }
         if (isset($data['payment_method'])) { $fields[] = 'payment_method = :payment_method'; $params[':payment_method'] = $data['payment_method']; }
         if (isset($data['payment_date'])) { $fields[] = 'payment_date = :payment_date'; $params[':payment_date'] = $data['payment_date']; }
-        if (isset($data['payment_status'])) { $fields[] = 'payment_status = :payment_status'; $params[':status'] = $data['payment_status']; }
+        if (isset($data['payment_status'])) { $fields[] = 'payment_status = :payment_status'; $params[':payment_status'] = $data['payment_status']; }
         if (isset($data['transaction_ref'])) { $fields[] = 'transaction_ref = :transaction_ref'; $params[':transaction_ref'] = $data['transaction_ref']; }
 
         if (empty($fields)) {

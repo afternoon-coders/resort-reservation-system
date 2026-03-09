@@ -15,21 +15,24 @@ class Mailer {
         $mail = new PHPMailer(true);
 
         try {
-            // Server settings - These should be moved to a config file eventually
+            // Server settings
             $mail->isSMTP();
-            $mail->Host       = $_ENV['SMTP_HOST']; // Replace with real SMTP host
+            $mail->Host       = $_ENV['SMTP_HOST'];
             $mail->SMTPAuth   = true;
-            $mail->Username   = $_ENV['SMTP_USER']; // Replace with real email
-            $mail->Password   = $_ENV['SMTP_PASS']; // Replace with real password
+            $mail->Username   = $_ENV['SMTP_USER'];
+            $mail->Password   = $_ENV['SMTP_PASS'];
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = $_ENV['SMTP_PORT'];
 
-            // Recipients
-            $mail->setFrom('barrmontlapaseo@gmail.com', 'Le Paseo Isla Andis Resort');
+            // Recipients — sender from .env
+            $senderEmail = $_ENV['MAIL_FROM_ADDRESS'] ?? $_ENV['SMTP_USER'] ?? 'noreply@example.com';
+            $senderName  = $_ENV['MAIL_FROM_NAME'] ?? 'Le Paseo Isla Andis Resort';
+            $mail->setFrom($senderEmail, $senderName);
             $mail->addAddress($toEmail, $recipientName);
 
-            // Content
-            $confirmationLink = "http://" . $_SERVER['HTTP_HOST'] . "/auth/confirm_booking.php?token=" . $token;
+            // Build confirmation link using APP_URL from .env (defaults to HTTPS)
+            $appUrl = rtrim($_ENV['APP_URL'] ?? ('https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/');
+            $confirmationLink = $appUrl . "/auth/confirm_booking.php?token=" . urlencode($token);
             
             $mail->isHTML(true);
             $mail->Subject = 'Confirm Your Reservation #' . $reservationId;

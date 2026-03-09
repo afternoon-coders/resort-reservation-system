@@ -11,6 +11,17 @@ if (!$checkIn || !$checkOut) {
     exit;
 }
 
+// Validate date format
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkIn) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkOut)) {
+    echo json_encode(['error' => 'Invalid date format. Use YYYY-MM-DD.']);
+    exit;
+}
+
+if ($checkIn >= $checkOut) {
+    echo json_encode(['error' => 'Check-in date must be before check-out date.']);
+    exit;
+}
+
 try {
     $roomModel = new RoomModel();
     $availableTypes = $roomModel->getAvailableTypes($checkIn, $checkOut);

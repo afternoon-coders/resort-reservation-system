@@ -4,6 +4,7 @@ require_once 'helpers/GuestModel.php';
 require_once 'helpers/ReservationModel.php';
 require_once 'helpers/UserModel.php';
 require_once 'auth/auth_functions.php';
+require_once 'inc/csrf.php';
 
 $roomModel = new RoomModel();
 $guestModel = new GuestModel();
@@ -65,6 +66,8 @@ $today = date('Y-m-d');
 
 // Handle Registration/Reservation Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reserve') {
+    csrf_verify_or_die();
+
     $roomId = $_POST['room_id'] ?? null;
     $checkIn = $_POST['check_in'] ?? null;
     $checkOut = $_POST['check_out'] ?? null;
@@ -73,11 +76,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $lName = $_POST['last_name'] ?? '';
     $contactEmail = $_POST['email'] ?? '';
     $phone_number = $_POST['phone_number'] ?? '';
-    $totalAmount = $_POST['total_amount'] ?? 0;
     $specialRequests = $_POST['special_requests'] ?? '';
+
+    // Server-side price validation: recalculate total from DB
+    $totalAmount = 0;
 
     if (!$roomId || !$checkIn || !$checkOut || !$fName || !$lName || !$contactEmail) {
         $msg = "Please fill in all required fields.";
+        $msgType = "error";
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkIn) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkOut)) {
+        $msg = "Invalid date format.";
+        $msgType = "error";
+    } elseif ($checkIn >= $checkOut || $checkIn < date('Y-m-d')) {
+        $msg = "Invalid date range. Check-in must be today or later and before check-out.";
         $msgType = "error";
     } else {
         try {
@@ -98,6 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $msg = "Sorry, there are no cottages of this type available for the chosen dates. Please select different dates or another cottage type.";
                 $msgType = "error";
             } else {
+                // Server-side total_amount calculation from DB price
+                $cottageInfo = $roomModel->getById($assignedCottageId);
+                if ($cottageInfo) {
+                    $nights = max(1, (int)((strtotime($checkOut) - strtotime($checkIn)) / 86400));
+                    $totalAmount = (float)$cottageInfo['base_price'] * $nights;
+                }
                 if (!$guestId) {
                     $guestId = $guestModel->create([
                         'first_name' => $fName,
@@ -124,9 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     require_once 'helpers/Mailer.php';
                     $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token);
                     
-                    $msg = "Reservation submitted! Please check your email (<strong>" . htmlspecialchars($contactEmail) . "</strong>) to confirm your booking.";
+                    $msg = "Reservation submitted! Please check your email (" . htmlspecialchars($contactEmail) . ") to confirm your booking.";
                     if (!$emailSent) {
-                        $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
+                        $msg .= " (Note: Email delivery may be delayed, please check your spam folder)";
                     }
                     $msgType = "success";
                     $selectedRoomTypeId = null;
@@ -136,7 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
             }
         } catch (\Throwable $e) {
-            $msg = "An error occurred: " . $e->getMessage();
+            error_log('Booking error: ' . $e->getMessage());
+            $msg = "An error occurred while processing your reservation. Please try again.";
             $msgType = "error";
         }
     }
@@ -214,6 +232,7 @@ if (isLoggedIn()) {
         <div class="booknow-card">
 
             <form method="POST" id="reservationForm">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="reserve">
                 <input type="hidden" name="total_amount" id="totalAmountInput" value="0">
 

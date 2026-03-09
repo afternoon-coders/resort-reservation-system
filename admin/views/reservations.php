@@ -53,6 +53,11 @@ try {
     $where = [];
     $params = [];
 
+    // Validate status against allowed values
+    if ($statusFilter && !in_array($statusFilter, ['Pending', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled'])) {
+        $statusFilter = '';
+    }
+
     if ($searchTerm) {
         $searchCond = "(g.first_name LIKE :s1 OR g.last_name LIKE :s2 OR g.email LIKE :s3";
         $params[':s1'] = "%$searchTerm%";
@@ -108,6 +113,7 @@ try {
                     <td>
                         <div class="action-btn-container">
                             <form method="post" >
+                                <?php echo csrf_field(); ?>
                                 <div class="action-btn">
                                     <input type="hidden" name="action" value="update_reservation_status">
                                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -125,6 +131,7 @@ try {
                                 </div>
                             </form>
                             <form method="post"  onsubmit="return confirm('Delete reservation?');">
+                                <?php echo csrf_field(); ?>
                                 <input type="hidden" name="action" value="delete_reservation">
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
@@ -269,6 +276,7 @@ try {
                             <td>
                                 <div class="action-btn-container">
                                     <form method="post">
+                                        <?php echo csrf_field(); ?>
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -281,6 +289,7 @@ try {
                                     </form>
 
                                     <form method="post"  onsubmit="return confirm('Delete reservation?');">
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="action" value="delete_reservation">
                                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">

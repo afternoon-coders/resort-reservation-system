@@ -34,8 +34,8 @@ class DB {
             self::$pdo = new PDO($dsn, $db_user, $db_pass, $options);
             return self::$pdo;
         } catch (PDOException $e) {
-            // Bubble up the exception for callers to handle
-            throw new RuntimeException('Database connection failed: ' . $e->getMessage());
+            error_log('Database connection failed: ' . $e->getMessage());
+            throw new RuntimeException('Database connection failed. Please check your configuration.');
         }
     }
 }

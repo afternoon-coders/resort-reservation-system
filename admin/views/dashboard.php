@@ -186,6 +186,7 @@ window.onload = function() {
                             <td>
                                 <div class="action-btn-container">
                                     <form method="post" style="display:inline-block;margin-right:6px;">
+                                        <?php echo csrf_field(); ?>
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status" onchange="updateSelectClass(this)">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -197,6 +198,7 @@ window.onload = function() {
                                     </form>
 
                                     <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete reservation?');">
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="action" value="delete_reservation">
                                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">

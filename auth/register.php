@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../helpers/UserModel.php';
 require_once __DIR__ . '/../helpers/GuestModel.php';
+require_once __DIR__ . '/../inc/csrf.php';
 
 $error = '';
 $success = '';
@@ -14,6 +15,8 @@ if (isset($_SESSION['user_id'])) {
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+
     $firstName = $_POST['first_name'] ?? '';
     $middleName = $_POST['middle_name'] ?? '';
     $lastName = $_POST['last_name'] ?? ''; 
@@ -58,6 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'role' => 'guest'
                 ]);
 
+                // Regenerate session ID to prevent session fixation
+                session_regenerate_id(true);
+
                 // Log in the new user
                 $_SESSION['user_id'] = $userId;
                 $_SESSION['username'] = $username;
@@ -81,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Luxury Resort</title>
 
-    <link rel="stylesheet" href="\admin\static\css\signup.css">
+    <link rel="stylesheet" href="/admin/static/css/signup.css">
     
     <style>
         .error-message {
@@ -107,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="signup-card">
             
-            <img src="\static\img\lepaseo_logo.jpg" alt="Logo" class="logo-img">
+            <img src="/static/img/lepaseo_logo.jpg" alt="Logo" class="logo-img">
 
             <h1>Create Account</h1>
             <p>Join us for the best hotel experience</p>
@@ -121,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <div class="full-name">
                     <div class="form-group">
                         <label for="firstName">First Name</label>

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../helpers/UserModel.php';
+require_once __DIR__ . '/../inc/csrf.php';
 
 $error = '';
 $success = '';
@@ -13,6 +14,8 @@ if (isset($_SESSION['user_id'])) {
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
@@ -25,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $userModel->getByEmail($email);
 
         if ($user && $userModel->verifyPassword($password, $user['password_hash'])) {
+            // Regenerate session ID to prevent session fixation
+            session_regenerate_id(true);
+
             // Login successful
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
@@ -56,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Login</title>
 
 <!-- Link External CSS -->
-<link rel="stylesheet" href="\admin\static\css\login.css">
+<link rel="stylesheet" href="/admin/static/css/login.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
     .error-message {
@@ -83,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
 
         <div class="login-card">
-            <img src="\static\img\lepaseo_logo.jpg" alt="Logo" class="logo-img">
+            <img src="/static/img/lepaseo_logo.jpg" alt="Logo" class="logo-img">
 
             <h1>Welcome</h1>
             <p class="subtitle">Sign in to manage your reservations</p>
@@ -97,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" name="email" placeholder="you@example.com" class="form-input" required>

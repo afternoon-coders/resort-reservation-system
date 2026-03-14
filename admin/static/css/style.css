@@ -205,7 +205,8 @@ td {
 /* STATUS BADGES */
 
 .badge {
-    height: 25px;
+    border: none;
+    height: 30px;
     display: flex;
     align-self: center;
     text-align: center;
@@ -214,20 +215,29 @@ td {
     font-size: 12px;
     font-weight: 600;
 }
-
-.confirmed {
-    background: #e6f4ea;
-    color: #1e7e34;
+select.pending   { 
+    background-color: #F9A875;
+     color: #fff; 
 }
 
-.pending {
-    background: #e8f4f8;
-    color: #0c5460;
+select.confirm   { 
+    background-color: #7DC9A0; 
+    color: #fff; 
 }
 
-.cancelled {
-    background: #fdecea;
-    color: #c82333;
+select.check-in  { 
+    background-color: #5BADAD; 
+    color: #fff; 
+}
+
+select.check-out { 
+    background-color: #8AAAB4; 
+    color: #fff; 
+}
+
+select.cancel  { 
+    background-color: #F28B82; 
+    color: #fff; 
 }
 
 /* Action Icon */
@@ -426,6 +436,7 @@ td {
 }
 
 .icon {
-    width: 18px;
-    height: 18px;
+    width: 25px;
+    height: 25px;
+    padding: 10px 10px;
 }

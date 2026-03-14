@@ -105,6 +105,7 @@ function showTab(tab) {
 window.onload = function() {
     showTab('homepage'); // default
 }
+
 </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -173,14 +174,14 @@ window.onload = function() {
                                 <div class="action-btn-container">
                                     <form method="post" style="display:inline-block;margin-right:6px;">
                                         <div class="action-btn">
-                                            <input type="hidden" name="action" value="update_reservation_status">
+                                            <input type="hidden" name="action" value="update_reservation_status" onchange="updateSelectClass(this)">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                            <select name="status" class="badge">
-                                                <option value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
-                                                <option value="Confirmed" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
-                                                <option value="Checked-In" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
-                                                <option value="Checked-Out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
-                                                <option value="Cancelled" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                            <select name="status" class="badge" onchange="updateSelectClass(this)">
+                                                <option value="Pending" class="pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
+                                                <option value="Confirmed" class="confirm" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                                <option value="Checked-In" class="check-in" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
+                                                <option value="Checked-Out" class="check-out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
+                                                <option value="Cancelled" class="cancel" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                             </select>
                                             <button class="refresh-btn" type="submit">
                                                 <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
@@ -203,6 +204,17 @@ window.onload = function() {
                 </table>
             <?php endif; ?>
         </div>
+        
+        <script>
+            document.querySelectorAll('select[name="status"]').forEach(select => {
+                updateSelectClass(select);
+            });
 
+            function updateSelectClass(select) {
+                select.classList.remove('pending', 'confirm', 'check-in', 'check-out', 'cancel');
+                const selectedOption = select.options[select.selectedIndex];
+                select.classList.add(selectedOption.className);
+            }
+        </script>
 </body>
 </html>

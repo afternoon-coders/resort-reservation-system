@@ -1,6 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 
+:root {
+    --title-color : #1a3a52;                   /* main brand color, */
+    --primary-color: #1a73e8;                  /* buttons, links */
+    --secondary-color: #F4EEE0;                /* accents, highlights */
+    --background-color: #f4f6f9;               /* page background */
+
+    --card-color: #fff;                        /* cards, modals, forms */
+    --success-color: #22c55e;                  /* booking confirmed */
+    --danger-color: #F28B82;                   /* cancellations */
+    --overlay-color: rgba(44,74,82,0.4);       /* modals, hero image tint */
+    --border-color: #e5e5e5;
+    --box-shadow: rgba(0,0,0,0.08);
+
+    --text-primary-color: #000;                /* headings, page titles */
+    --text-secondary-color: #555;              /*vsubheadings, labels */
+    --text-muted-color: #969696;               /* placeholders, captions, hints */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -9,7 +27,7 @@
 }
 
 body {
-    background: #f4f6f9;
+    background: var(--background-color);
     margin: 0;
 }
 
@@ -30,7 +48,7 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(255,255,255);
+    background: var(--background-color);
     padding: 20px 0; 
     z-index: 999;
 }
@@ -73,14 +91,14 @@ body {
     font-size: 20px;
     font-weight: bold;
     margin: 0;
-    color: #1a3a52;
+    color: var(--title-color);
 }
 
 /* Subtitle */
 .sub-name {
     font-size: 12px;
     margin: 0;
-    color: #666;
+    color: var(--text-secondary-color);
 }
 
 /* ================== */
@@ -101,7 +119,7 @@ body {
 
 .nav-links a {
     text-decoration: none;
-    color: #333;
+    color: var(--text-secondary-color);
     font-size: 14px;
     font-weight: 500;
     transition: 0.3s;
@@ -109,7 +127,7 @@ body {
 
 .nav-links a:hover,
 .nav-links a.active {
-    color: #1a73e8;
+    color: var(--primary-color);
 }
 
 
@@ -121,16 +139,16 @@ body {
 
 /* Logout button */
 .logout-btn {
-    background-color: #ffffff;
+    background-color: var(--surface-color);
     color: #000;
     padding: 8px 15px;
     border-radius: 10px;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--border-color);
     font-size: 16px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 4px var(--box-shadow);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 
 }
@@ -299,7 +317,7 @@ body {
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 20px var(--box-shadow);
     transition: 0.3s;
 }
 
@@ -493,7 +511,7 @@ body {
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 4px var(--box-shadow);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -578,7 +596,7 @@ body {
 .home_header {
     margin-top: 90px;
     padding: 25px;
-    background: #F4EEE0;
+    background: var(--secondary-color);
     
     display: flex;
     flex-direction: column;   
@@ -733,7 +751,7 @@ body {
     border-radius: 12px;
     transition: 0.3s ease;
     border: 1px solid #dfdfdf;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 20px var(--box-shadow);
 
     display: flex;
     flex-direction: column;
@@ -784,7 +802,7 @@ body {
 
 .booknow-card:hover, .summary-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 45px var(--box-shadow);
 }
 
 /* Section headings */
@@ -859,7 +877,7 @@ body {
     width: 100%;
     padding: 16px;
     background: linear-gradient(135deg, #086584 0%, #064d64 100%);
-    color: white;
+    color: var(--card-color);
     border: none;
     border-radius: 12px;
     font-size: 1rem;
@@ -1047,14 +1065,14 @@ body {
 
 
 .home_header h1 {
-    color: #182529;
+    color: var(--text-primary-color);
     font-weight: bold;
     font-size: 60px;
     line-height: 1.6; 
 }
 
 .home_header p {
-    color: #969696;
+    color: var(--text-muted-color);
 }
 
 .contact-wrapper {
@@ -1071,7 +1089,7 @@ body {
 
 .info-section p {
     font-size: 14px;
-    color: #555;
+    color: var(--text-muted-color);
     line-height: 1.6;
 }
 
@@ -1082,7 +1100,7 @@ body {
 
 .info-card {
     height: 100px;
-    background: #fff;
+    background: var(--card-color);
     border-radius: 14px;
     padding: 20px 20px;
     display: flex;
@@ -1101,8 +1119,8 @@ body {
 }
 
 .icon img{
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    height: 100%;
     border-radius: 10px;
     padding: 5px;
     background: #e6f4f9;
@@ -1132,10 +1150,11 @@ body {
 
 /* RIGHT SIDE FORM */
 .form-card {
-    background: #fff;
+    height: 575px;
+    background: var(--card-color);
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px var(--box-shadow);
 }
 
 .form-card h3 {
@@ -1157,15 +1176,18 @@ body {
 .booknow-label {
     font-size: 12px;
     margin: 5px 3px;
-    color: #333;
+    color: var(--text-muted-color);
     font-weight: bold;
 }
 
+.form-group label { 
+    margin: 5px;
+}
 .form-group input, textarea {
     padding: 10px 12px;
     border-radius: 8px;
     border: none;
-    background: #f3efe7;
+    background: var(--secondary-color);
     font-size: 14px;
 }
 
@@ -1179,10 +1201,9 @@ body {
 }
 
 .btn {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    background: #0284c7;
+    margin-top: 100px;
+    padding: 12px 25px;
+    background: var(--primary-color);
     color: #fff;
     border: none;
     border-radius: 8px;

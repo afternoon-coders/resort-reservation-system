@@ -65,7 +65,16 @@ try {
 <body>
 
     <div class="admin-header">
-        <h1>Manage Cottages</h1>
+        <span style="display:flex; justify-content: space-between; align-items: center;">
+            <h1>Manage Cottages</h1>
+            <button class="btn">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#fff"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+                </span>
+                Add Room Type
+            </button>
+        </span>
+        <p>Manage room inventory, pricing, and content</p>
     </div>
 
     <div class="manage-room-parent">

@@ -16,7 +16,7 @@ function loadRooms() {
                     <p class="room-description">${room.description}</p>
                     <p class="room-meta">Beds: ${room.beds}</p>
                     <div class="button-group">
-                        <a href="index.php?page=booknow&room_id=${room.room_id}" class="book-btn">Book Now</a>
+                        <a href="index.php?page=booknow&room_type_id=${room.room_type_id}" class="book-btn">Book Now</a>
                         <a href="#" class="details-btn">View Details</a>
                     </div>
 

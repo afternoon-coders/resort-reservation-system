@@ -1,69 +1,56 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
-require_once '../helpers/RoomModel.php';
+require_once __DIR__ . '/../helpers/admin_backend.php';
+require_once __DIR__ . '/../../helpers/RoomModel.php';
 
-requireLogin();
-requireAdmin();
-
-$pdo = DB::getPDO();
-$types = $pdo->query("SELECT * FROM Cottage_Types")->fetchAll();
 $message = '';
 $error = '';
+$csrfToken = '';
 
-$roomModel = new RoomModel();
-$rooms = $roomModel->getAll();
+try {
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $action = $_POST['action'];
-    $pdo = DB::getPDO();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
 
-    if ($action === 'delete_cottage' && !empty($_POST['cottage_id'])) {
-        $stmt = $pdo->prepare('DELETE FROM Cottages WHERE cottage_id = :id');
-        $stmt->execute([':id' => (int)$_POST['cottage_id']]);
-        $message = 'Cottage deleted successfully.';
-        $rooms = $roomModel->getAll();
+        $action = trim((string)($_POST['action'] ?? ''));
+        if ($action === '') {
+            $action = 'create_cottage';
+        }
+
+        $result = admin_dispatch_action($pdo, $action, $_POST);
+        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
+
+        admin_redirect_to_page('manage_rooms');
     }
 
-    if ($action === 'update_status' && !empty($_POST['cottage_id']) && isset($_POST['status'])) {
-        $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
-        $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['cottage_id']]);
-        $message = 'Cottage status updated.';
-        $rooms = $roomModel->getAll();
-    }
-}
-
-// Calculate Stats
-$roomsTotal = $pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
-$roomsAvailable = $pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Available'")->fetchColumn();
-$reservationsTotal = $pdo->query("SELECT COUNT(*) FROM Reservations")->fetchColumn();
-$cottageTypes = $pdo->query("SELECT COUNT(*) FROM Cottage_Types")->fetchColumn();
-
-$types = $pdo->query("SELECT * FROM Cottage_Types")->fetchAll();
-$message = '';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cottageNumber = trim($_POST['cottage_number'] ?? '');
-    $typeId = $_POST['type_id'] ?? null;
-    $price = $_POST['base_price'] ?? 0;
-    $maxOcc = $_POST['max_occupancy'] ?? 2;
-    $status = $_POST['status'] ?? 'Available';
-    $description = trim($_POST['description'] ?? '');
-
-    if (!$cottageNumber || !$typeId) {
-        $error = 'Please fill in required fields.';
-    } else {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO Cottages (cottage_number, type_id, base_price, max_occupancy, status, description) 
-                                   VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$cottageNumber, $typeId, $price, $maxOcc, $status, $description]);
-            header('Location: index.php?page=manage_rooms&msg=added');
-            exit;
-        } catch (Exception $e) {
-            $error = 'Error: ' . $e->getMessage();
+    $flash = admin_pop_flash();
+    if ($flash !== null) {
+        if (($flash['type'] ?? '') === 'error') {
+            $error = $flash['message'];
+        } else {
+            $message = $flash['message'];
         }
     }
+
+    $roomModel = new RoomModel();
+    $rooms = $roomModel->getAll();
+
+    // Calculate stats
+    $roomsTotal = $pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
+    $roomsAvailable = $pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Available'")->fetchColumn();
+    $reservationsTotal = $pdo->query("SELECT COUNT(*) FROM Reservations")->fetchColumn();
+    $cottageTypes = $pdo->query("SELECT COUNT(*) FROM Cottage_Types")->fetchColumn();
+
+    $types = $pdo->query("SELECT type_id, type_name AS name FROM Cottage_Types ORDER BY type_name ASC")->fetchAll();
+} catch (Throwable $e) {
+    $error = $e->getMessage();
+    $rooms = [];
+    $types = [];
+    $roomsTotal = 0;
+    $roomsAvailable = 0;
+    $reservationsTotal = 0;
+    $cottageTypes = 0;
 }
 
 ?>
@@ -117,6 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($message): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
             <?php endif; ?>
+            <?php if ($error): ?>
+                <div class="alert alert-danger" style="color: red; margin-bottom: 10px;"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
 
             <div class="card">
                 <h3>Room Types</h3>
@@ -150,11 +140,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span>
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="action" value="update_status">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                     <input type="hidden" name="cottage_id" value="<?php echo $r['cottage_id']; ?>">
                                     <select name="status" class="badge" onchange="updateSelectClass(this); this.form.submit()">
                                         <option value="Available" <?php echo $r['status'] === 'Available' ? 'selected' : ''; ?>>Available</option>
                                         <option value="Occupied" <?php echo $r['status'] === 'Occupied' ? 'selected' : ''; ?>>Occupied</option>
                                         <option value="Maintenance" <?php echo $r['status'] === 'Maintenance' ? 'selected' : ''; ?>>Maintenance</option>
+                                            <option value="Out of Order" <?php echo $r['status'] === 'Out of Order' ? 'selected' : ''; ?>>Out of Order</option>
                                     </select>
                                 </form>
                             </span>
@@ -165,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </a> -->
                                     <form method="post" style="display:inline;" onsubmit="return confirm('Delete this cottage?');">
                                         <input type="hidden" name="action" value="delete_cottage">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                         <input type="hidden" name="cottage_id" value="<?php echo $r['cottage_id']; ?>">
                                         <button type="submit" class="delete-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FF2E2E"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
@@ -189,6 +182,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
 
                     <form method="post">
+                        <input type="hidden" name="action" value="create_cottage">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         <div class="form-group">
                             <label class="edit-cottage-label">Cottage Number *</label>
                             <input type="text" name="cottage_number" class="booknow-input" style="background-color: transparent; border: 1.5px solid #e2e8f0;" required>
@@ -219,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <option value="Available">Available</option>
                                 <option value="Occupied">Occupied</option>
                                 <option value="Maintenance">Maintenance</option>
+                                <option value="Out of Order">Out of Order</option>
                             </select>
                         </div>
 

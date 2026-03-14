@@ -10,7 +10,7 @@ $guestModel = new GuestModel();
 $reservationModel = new ReservationModel();
 $userModel = new UserModel();
 
-$selectedRoomId = $_GET['room_id'] ?? null;
+$requestedRoomTypeId = $_POST['room_id'] ?? $_GET['room_type_id'] ?? $_GET['room_id'] ?? null;
 $allRooms = $roomModel->getAll(['status' => 'available']);
 
 $uniqueTypes = [];
@@ -19,6 +19,37 @@ foreach ($allRooms as $room) {
     if (!in_array($room['type_id'], $uniqueTypes)) {
         $uniqueTypes[] = $room['type_id'];
         $uniqueRooms[] = $room;
+    }
+}
+
+$roomTypeCatalog = array_map(static function ($room) {
+    return [
+        'type_id' => (int)($room['type_id'] ?? 0),
+        'name' => $room['name'] ?? 'Cottage',
+        'base_price' => (float)($room['base_price'] ?? 0),
+        'max_occupancy' => (int)($room['max_occupancy'] ?? 0),
+    ];
+}, $uniqueRooms);
+
+$selectedRoomTypeId = null;
+if ($requestedRoomTypeId !== null && ctype_digit((string)$requestedRoomTypeId)) {
+    $selectedRoomTypeId = (int)$requestedRoomTypeId;
+}
+
+if ($selectedRoomTypeId !== null) {
+    $validTypeIds = array_column($roomTypeCatalog, 'type_id');
+
+    if (!in_array($selectedRoomTypeId, $validTypeIds, true)) {
+        foreach ($allRooms as $room) {
+            if ((int)($room['cottage_id'] ?? 0) === $selectedRoomTypeId) {
+                $selectedRoomTypeId = (int)$room['type_id'];
+                break;
+            }
+        }
+    }
+
+    if (!in_array($selectedRoomTypeId, $validTypeIds, true)) {
+        $selectedRoomTypeId = null;
     }
 }
 
@@ -79,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                 $reservationId = $reservationModel->create([
                     'guest_id' => $guestId,
-                    'room_id' => $assignedCottageId, 
+                    'room_id' => (int)$roomId,
                     'check_in_date' => $checkIn,
                     'check_out_date' => $checkOut,
                     'total_amount' => $totalAmount,
@@ -98,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
                     }
                     $msgType = "success";
-                    $selectedRoomId = null;
+                    $selectedRoomTypeId = null;
                 } else {
                     $msg = "Failed to create reservation. Please try again.";
                     $msgType = "error";
@@ -291,8 +322,21 @@ if (isLoggedIn()) {
                     <div>
                         <label class="booknow-label">Room Type</label>
                             <select name="room_id" class="booknow-select" id="roomType" onchange="updateSummary()" required>
-                            <option value="">Select dates first</option>
+                            <option value="">Select a room type</option>
+                            <?php foreach ($roomTypeCatalog as $roomType): ?>
+                                <option
+                                    value="<?php echo (int)$roomType['type_id']; ?>"
+                                    data-price="<?php echo htmlspecialchars((string)$roomType['base_price']); ?>"
+                                    data-max-occupancy="<?php echo (int)$roomType['max_occupancy']; ?>"
+                                    <?php echo $selectedRoomTypeId === (int)$roomType['type_id'] ? 'selected' : ''; ?>
+                                >
+                                    <?php echo htmlspecialchars($roomType['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
+                        <?php if ($selectedRoomTypeId !== null): ?>
+                            <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Selected from the rooms page. Choose your dates to confirm availability.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -375,6 +419,34 @@ if (isLoggedIn()) {
     </div>
 
     <script>
+    const roomTypeCatalog = <?php echo json_encode($roomTypeCatalog, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    const initialSelectedRoomTypeId = <?php echo json_encode($selectedRoomTypeId); ?>;
+
+    function renderRoomTypeOptions(roomTypes, selectedValue = null, placeholder = 'Select a room type') {
+        const roomSelect = document.getElementById('roomType');
+        const normalizedSelectedValue = selectedValue === null || selectedValue === '' ? '' : String(selectedValue);
+        let hasSelectedMatch = normalizedSelectedValue === '';
+        let options = `<option value="">${placeholder}</option>`;
+
+        roomTypes.forEach(type => {
+            const typeId = String(type.type_id);
+            const isSelected = normalizedSelectedValue !== '' && normalizedSelectedValue === typeId;
+            if (isSelected) {
+                hasSelectedMatch = true;
+            }
+
+            options += `<option value="${typeId}" data-price="${type.base_price}" data-max-occupancy="${type.max_occupancy}" ${isSelected ? 'selected' : ''}>${type.name}</option>`;
+        });
+
+        roomSelect.innerHTML = options;
+
+        if (!hasSelectedMatch) {
+            roomSelect.value = '';
+        }
+
+        return hasSelectedMatch && normalizedSelectedValue !== '';
+    }
+
     function updateSummary() {
         const select = document.getElementById('roomType');
         const guestSelect = document.getElementById('guestSelect');
@@ -454,9 +526,11 @@ if (isLoggedIn()) {
         const checkIn = document.getElementById('checkInDate').value;
         const checkOut = document.getElementById('checkOutDate').value;
         const roomSelect = document.getElementById('roomType');
+        const summaryText = document.querySelector('.booknow-summary-text');
+        const preferredRoomTypeId = roomSelect.value || initialSelectedRoomTypeId || '';
         
         if (!checkIn || !checkOut) {
-            roomSelect.innerHTML = '<option value="">Select dates first</option>';
+            renderRoomTypeOptions(roomTypeCatalog, preferredRoomTypeId);
             updateSummary();
             return;
         }
@@ -469,20 +543,21 @@ if (isLoggedIn()) {
             .then(data => {
                 roomSelect.disabled = false;
                 if (data.success && data.types.length > 0) {
-                    let options = '<option value="">Select a room</option>';
-                    data.types.forEach(type => {
-                        options += `<option value="${type.type_id}" data-price="${type.base_price}" data-max-occupancy="${type.max_occupancy}">${type.name}</option>`;
-                    });
-                    roomSelect.innerHTML = options;
+                    const hasSelectedRoom = renderRoomTypeOptions(data.types, preferredRoomTypeId, 'Select a room');
+                    updateSummary();
+
+                    if (preferredRoomTypeId && !hasSelectedRoom) {
+                        summaryText.innerHTML = '<p style="color:#b45309; font-size: 14px;"><i class="fa-solid fa-circle-info"></i> Selected room type is unavailable for the chosen dates. Please choose another room.</p>';
+                    }
                 } else {
                     roomSelect.innerHTML = '<option value="">No rooms available for these dates</option>';
+                    updateSummary();
                 }
-                updateSummary();
             })
             .catch(error => {
                 console.error('Error fetching rooms:', error);
                 roomSelect.disabled = false;
-                roomSelect.innerHTML = '<option value="">Error sorting rooms. Please try again.</option>';
+                renderRoomTypeOptions(roomTypeCatalog, preferredRoomTypeId);
                 updateSummary();
             });
     }
@@ -514,8 +589,11 @@ if (isLoggedIn()) {
 
     document.getElementById('checkOutDate').addEventListener('change', fetchAvailableRooms);
 
-    // Initialize summary if a room is pre-selected
-    document.addEventListener('DOMContentLoaded', updateSummary);
+    // Initialize room selection and summary on page load.
+    document.addEventListener('DOMContentLoaded', function() {
+        renderRoomTypeOptions(roomTypeCatalog, initialSelectedRoomTypeId);
+        updateSummary();
+    });
     </script>
 </body>
 </html>

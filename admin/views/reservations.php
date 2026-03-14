@@ -1,51 +1,45 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
-
-requireLogin();
-requireAdmin();
+require_once __DIR__ . '/../helpers/admin_backend.php';
 
 $error = null;
 $message = '';
+$csrfToken = '';
+$searchTerm = '';
+$statusFilter = '';
 try {
-    $pdo = DB::getPDO();
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
 
-    // Handle admin actions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
-        $action = $_POST['action'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
 
-        if ($action === 'update_reservation_status' && !empty($_POST['reservation_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE Reservations SET status = :s WHERE reservation_id = :id');
-            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['reservation_id']]);
-            $message = 'Reservation status updated.';
-        }
+        $action = trim((string)($_POST['action'] ?? ''));
+        $result = admin_dispatch_action($pdo, $action, $_POST);
+        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
 
-        if ($action === 'delete_reservation' && !empty($_POST['reservation_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM Reservations WHERE reservation_id = :id');
-            $stmt->execute([':id' => (int)$_POST['reservation_id']]);
-            $message = 'Reservation deleted.';
-        }
+        admin_redirect_to_page('reservations');
+    }
 
-        if ($action === 'delete_user' && !empty($_POST['user_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
-            $stmt->execute([':id' => (int)$_POST['user_id']]);
-            $message = 'User deleted.';
-        }
-
-        if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
-            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
-            $message = 'Cottage status updated.';
+    $flash = admin_pop_flash();
+    if ($flash !== null) {
+        if (($flash['type'] ?? '') === 'error') {
+            $error = $flash['message'];
+        } else {
+            $message = $flash['message'];
         }
     }
 
     // Search and filter logic
-    $searchTerm = $_GET['search'] ?? '';
-    $statusFilter = $_GET['status'] ?? '';
+    $searchTerm = trim((string)($_GET['search'] ?? ''));
+    if (strlen($searchTerm) > 100) {
+        $searchTerm = substr($searchTerm, 0, 100);
+    }
+
+    $normalizedStatus = admin_normalize_enum($_GET['status'] ?? null, admin_reservation_statuses());
+    $statusFilter = $normalizedStatus ?? '';
 
     if (isset($_GET['clear'])) {
-        header('Location: index.php?page=reservations');
-        exit;
+        admin_redirect_to_page('reservations');
     }
 
     $query = "SELECT r.reservation_id, r.check_in_date, r.check_out_date, r.status, 
@@ -116,6 +110,7 @@ try {
                             <form method="post" >
                                 <div class="action-btn">
                                     <input type="hidden" name="action" value="update_reservation_status">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                     <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                     <select name="status" class="badge">
                                         <option class="pending" value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
@@ -131,6 +126,7 @@ try {
                             </form>
                             <form method="post"  onsubmit="return confirm('Delete reservation?');">
                                 <input type="hidden" name="action" value="delete_reservation">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                 <button class="delete-btn" type="submit">
                                     <img src="/admin/static/img/adminpanel_icons/delete.svg" alt="">
@@ -146,7 +142,7 @@ try {
         exit;
     }
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     $error = $e->getMessage();
     $recentReservations = [];
 }
@@ -218,6 +214,9 @@ try {
         <?php if ($error): ?>
             <div style="padding:12px;background:#fdecea;border:1px solid #f5c2c2;color:#6b0b0b;border-radius:4px;margin-bottom:12px;">Error: <?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
+        <?php if ($message): ?>
+            <div style="padding:12px;background:#e7f7ed;border:1px solid #b8e0c2;color:#124b26;border-radius:4px;margin-bottom:12px;"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
 
         <div style="margin-top:20px;" class="card">
             <h3>Search Reservations</h3>
@@ -267,6 +266,7 @@ try {
                                     <form method="post">
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                             <select name="status" class="badge">
                                                 <option class="pending" value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
@@ -283,6 +283,7 @@ try {
 
                                     <form method="post"  onsubmit="return confirm('Delete reservation?');">
                                         <input type="hidden" name="action" value="delete_reservation">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                         <button class="delete-btn" type="submit">
                                             <img src="/admin/static/img/adminpanel_icons/delete.svg" alt="">

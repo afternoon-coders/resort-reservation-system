@@ -19,7 +19,9 @@ foreach ($dbRooms as $room) {
 // Format rooms for JavaScript
 $formattedRooms = array_map(function($room) {
     return [
-        'room_id' => $room['cottage_id'],
+        'room_id' => (int)($room['type_id'] ?? 0),
+        'room_type_id' => (int)($room['type_id'] ?? 0),
+        'cottage_id' => (int)($room['cottage_id'] ?? 0),
         'name' => $room['name'] ?? 'Cottage',
         'price' => (int)($room['base_price'] ?? 0),
         'image' => 'static/img/' . strtolower(str_replace(' ', '_', $room['name'] ?? 'cottage')) . '.jpg',

@@ -4,9 +4,9 @@ $root = __DIR__;
 $cmds = [
     "php $root/seed_users.php",
     "php $root/seed_cottages.php",
-    "php $root/seed_guests.php",
-    "php $root/seed_reservations.php",
-    "php $root/seed_payments.php",
+    // "php $root/seed_guests.php",
+    // "php $root/seed_reservations.php",
+    // "php $root/seed_payments.php",
 ];
 
 foreach ($cmds as $c) {

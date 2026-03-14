@@ -1,60 +1,56 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
-
-requireLogin();
-requireAdmin();
+require_once __DIR__ . '/../helpers/admin_backend.php';
 
 $error = null;
 $message = '';
+$csrfToken = '';
 try {
-    $pdo = DB::getPDO();
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
 
-    // Handle admin actions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
-        $action = $_POST['action'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
 
-        if ($action === 'update_reservation_status' && !empty($_POST['reservation_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE Reservations SET status = :s WHERE reservation_id = :id');
-            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['reservation_id']]);
-            $message = 'Reservation status updated.';
-        }
+        $action = trim((string)($_POST['action'] ?? ''));
+        $result = admin_dispatch_action($pdo, $action, $_POST);
+        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
 
-        if ($action === 'delete_reservation' && !empty($_POST['reservation_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM Reservations WHERE reservation_id = :id');
-            $stmt->execute([':id' => (int)$_POST['reservation_id']]);
-            $message = 'Reservation deleted.';
-        }
+        admin_redirect_to_page('dashboard');
+    }
 
-        if ($action === 'delete_user' && !empty($_POST['user_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
-            $stmt->execute([':id' => (int)$_POST['user_id']]);
-            $message = 'User deleted.';
-        }
-
-        if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
-            $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
-            $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
-            $message = 'Cottage status updated.';
+    $flash = admin_pop_flash();
+    if ($flash !== null) {
+        if (($flash['type'] ?? '') === 'error') {
+            $error = $flash['message'];
+        } else {
+            $message = $flash['message'];
         }
     }
     
     
-    // Calculate Stats
-    $roomsTotal = $pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
-    $roomsAvailable = $pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Available'")->fetchColumn();
-    $reservationsTotal = $pdo->query("SELECT COUNT(*) FROM Reservations")->fetchColumn();
-    $reservationsPending = $pdo->query("SELECT COUNT(*) FROM Reservations WHERE status = 'Pending'")->fetchColumn();
-    $usersTotal = $pdo->query("SELECT COUNT(*) FROM Users")->fetchColumn();
-    $paymentsTotal = $pdo->query("SELECT SUM(amount_paid) FROM Payments")->fetchColumn() ?: 0.0;
+    // Monthly report stats
+    $roomsTotal = (int)$pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
 
-    // Get current month revenue
-    $monthlyRevenue = $pdo->query(
-        "SELECT SUM(amount_paid) AS revenue
-        FROM Payments
-        WHERE MONTH(payment_date) = MONTH(CURRENT_DATE())
-        AND YEAR(payment_date) = YEAR(CURRENT_DATE())"
-    )->fetch();
+    $monthlyReservations = (int)$pdo->query(
+        "SELECT COUNT(*)
+         FROM Reservations
+         WHERE MONTH(booking_date) = MONTH(CURRENT_DATE())
+         AND YEAR(booking_date) = YEAR(CURRENT_DATE())"
+    )->fetchColumn();
+
+    $monthlyGuests = (int)$pdo->query(
+        "SELECT COUNT(DISTINCT guest_id)
+         FROM Reservations
+         WHERE MONTH(booking_date) = MONTH(CURRENT_DATE())
+         AND YEAR(booking_date) = YEAR(CURRENT_DATE())"
+    )->fetchColumn();
+
+    $currentMonthRevenue = (float)($pdo->query(
+        "SELECT COALESCE(SUM(amount_paid), 0)
+         FROM Payments
+         WHERE MONTH(payment_date) = MONTH(CURRENT_DATE())
+         AND YEAR(payment_date) = YEAR(CURRENT_DATE())"
+    )->fetchColumn() ?: 0);
 
     // Recent reservations - Using GROUP_CONCAT for multiple cottages
     $recentReservations = $pdo->query(
@@ -77,10 +73,12 @@ try {
          ORDER BY u.user_id DESC LIMIT 8"
     )->fetchAll();
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     $error = $e->getMessage();
-    $roomsTotal = $roomsAvailable = $reservationsTotal = $reservationsPending = $usersTotal = 0;
-    $paymentsTotal = 0.0;
+    $roomsTotal = 0;
+    $monthlyReservations = 0;
+    $monthlyGuests = 0;
+    $currentMonthRevenue = 0.0;
     $recentReservations = [];
     $recentUsers = [];
 }
@@ -120,33 +118,36 @@ window.onload = function() {
         <?php if ($error): ?>
             <div style="padding:12px;background:#fdecea;border:1px solid #f5c2c2;color:#6b0b0b;border-radius:4px;margin-bottom:12px;">Error: <?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
+        <?php if ($message): ?>
+            <div style="padding:12px;background:#e7f7ed;border:1px solid #b8e0c2;color:#124b26;border-radius:4px;margin-bottom:12px;"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
 
         <div class="grid">
             <div class="card-stat">
-                <h2><?php echo $reservationsTotal; ?></h2>
+                <h2><?php echo $monthlyReservations; ?></h2>
                 <div class="card-stat-content">
-                    <div class="muted">Total Reservations</div>
+                    <div class="muted">Monthly Reservations</div>
                     <img src="static/img/adminpanel_icons/reservation.svg" alt="">
                 </div>
             </div>
             <div class="card-stat">
-                    <h2><?php echo ($roomsTotal-$reservationsTotal) . " / " . ($roomsAvailable); ?></h2>
+                    <h2><?php echo $roomsTotal; ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Total Cottages</div>
                     <img src="static/img/adminpanel_icons/bed.svg" alt="">
                 </div>
             </div>
             <div class="card-stat">
-                    <h2><?php echo $usersTotal; ?></h2>
+                    <h2><?php echo $monthlyGuests; ?></h2>
                 <div class="card-stat-content">
-                    <div class="muted">Total Guests</div>
+                    <div class="muted">Guests Booked This Month</div>
                     <img src="static/img/adminpanel_icons/people.svg" alt="">
                 </div>
             </div>
             <div class="card-stat">
-                    <h2>&#8369; <?php echo $monthlyRevenue['revenue']; ?></h2>
+                    <h2>&#8369; <?php echo number_format($currentMonthRevenue, 2); ?></h2>
                 <div class="card-stat-content">
-                    <div class="muted">Monthly Revenue</div>
+                    <div class="muted">Current Month Revenue</div>
                     <img src="static/img/adminpanel_icons/dollar.svg" alt="">
                 </div>
             </div>
@@ -175,6 +176,7 @@ window.onload = function() {
                                     <form method="post" style="display:inline-block;margin-right:6px;">
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status" onchange="updateSelectClass(this)">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                             <select name="status" class="badge" onchange="updateSelectClass(this)">
                                                 <option value="Pending" class="pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
@@ -191,6 +193,7 @@ window.onload = function() {
 
                                     <form method="post" style="display:inline-block;" onsubmit="return confirm('Delete reservation?');">
                                         <input type="hidden" name="action" value="delete_reservation">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                         <button class="delete-btn" type="submit">
                                             <img src="/admin/static/img//adminpanel_icons/delete.svg" alt="">

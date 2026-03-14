@@ -216,10 +216,11 @@ class ReservationModel extends BaseModel
     public function autoUpdateStatuses(): void
     {
         // 1. Auto-Cancel
-        // If they did not confirm before the day of their supposedly arrival
+        // Cancel only after the arrival date has fully passed.
+        // Using < CURDATE() prevents same-day arrivals from being auto-cancelled.
         $cancelSql = "UPDATE {$this->table} 
                       SET status = 'Cancelled' 
-                      WHERE status = 'Pending' AND check_in_date <= CURDATE()";
+                      WHERE status = 'Pending' AND check_in_date < CURDATE()";
         $this->pdo->exec($cancelSql);
 
         // 2. Auto-Checkout 

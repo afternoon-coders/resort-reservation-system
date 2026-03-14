@@ -1,25 +1,30 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
-
-requireLogin();
-requireAdmin();
+require_once __DIR__ . '/../helpers/admin_backend.php';
 
 $error = null;
 $message = '';
+$csrfToken = '';
 try {
-    $pdo = DB::getPDO();
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
 
-    // Handle admin actions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
-        $action = $_POST['action'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
 
-        if ($action === 'delete_user' && !empty($_POST['user_id'])) {
-            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
-            $stmt->execute([':id' => (int)$_POST['user_id']]);
-            $message = 'User deleted.';
+        $action = trim((string)($_POST['action'] ?? ''));
+        $result = admin_dispatch_action($pdo, $action, $_POST);
+        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
+
+        admin_redirect_to_page('customers');
+    }
+
+    $flash = admin_pop_flash();
+    if ($flash !== null) {
+        if (($flash['type'] ?? '') === 'error') {
+            $error = $flash['message'];
+        } else {
+            $message = $flash['message'];
         }
-
     }
     
 
@@ -33,7 +38,7 @@ try {
     )->fetchAll();
 
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     $error = $e->getMessage();
     $roomsTotal = $roomsAvailable = $reservationsTotal = $reservationsPending = $usersTotal = 0;
     $paymentsTotal = 0.0;
@@ -85,6 +90,9 @@ window.onload = function() {
         <div class="error-box">
             <?php echo htmlspecialchars($error); ?>
         </div>
+    <?php endif; ?>
+    <?php if ($message): ?>
+        <div style="padding:12px;background:#e7f7ed;border:1px solid #b8e0c2;color:#124b26;border-radius:4px;margin-bottom:12px;"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
 
     <div class="customers-grid">

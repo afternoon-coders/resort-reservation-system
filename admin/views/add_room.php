@@ -1,36 +1,30 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
+require_once __DIR__ . '/../helpers/admin_backend.php';
 
-requireLogin();
-requireAdmin();
-
-$pdo = DB::getPDO();
-$types = $pdo->query("SELECT * FROM Cottage_Types")->fetchAll();
 $message = '';
 $error = '';
+$csrfToken = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cottageNumber = trim($_POST['cottage_number'] ?? '');
-    $typeId = $_POST['type_id'] ?? null;
-    $price = $_POST['base_price'] ?? 0;
-    $maxOcc = $_POST['max_occupancy'] ?? 2;
-    $status = $_POST['status'] ?? 'Available';
-    $description = trim($_POST['description'] ?? '');
+try {
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
 
-    if (!$cottageNumber || !$typeId) {
-        $error = 'Please fill in required fields.';
-    } else {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO Cottages (cottage_number, type_id, base_price, max_occupancy, status, description) 
-                                   VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$cottageNumber, $typeId, $price, $maxOcc, $status, $description]);
-            header('Location: index.php?page=manage_rooms&msg=added');
-            exit;
-        } catch (Exception $e) {
-            $error = 'Error: ' . $e->getMessage();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
+
+        $result = admin_create_cottage($pdo, $_POST);
+        if ($result['ok']) {
+            admin_set_flash('success', $result['message']);
+            admin_redirect_to_page('manage_rooms');
         }
+
+        $error = $result['message'];
     }
+
+    $types = $pdo->query("SELECT type_id, type_name AS name FROM Cottage_Types ORDER BY type_name ASC")->fetchAll();
+} catch (Throwable $e) {
+    $error = $e->getMessage();
+    $types = [];
 }
 ?>
 
@@ -55,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
             <div class="form-group">
                 <label class="booknow-label">Cottage Number *</label>
                 <input type="text" name="cottage_number" class="booknow-input" required>
@@ -85,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <option value="Available">Available</option>
                     <option value="Occupied">Occupied</option>
                     <option value="Maintenance">Maintenance</option>
+                    <option value="Out of Order">Out of Order</option>
                 </select>
             </div>
 

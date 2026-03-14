@@ -1,49 +1,62 @@
 <?php
-require_once '../auth/auth_functions.php';
-require_once '../helpers/DB.php';
+require_once __DIR__ . '/../helpers/admin_backend.php';
 
-requireLogin();
-requireAdmin();
+$error = '';
+$csrfToken = '';
+$types = [];
+$cottage = null;
 
-$pdo = DB::getPDO();
-$cottageId = $_GET['id'] ?? null;
-if (!$cottageId) {
-    header('Location: index.php?page=manage_rooms');
-    exit;
+try {
+    $pdo = admin_bootstrap();
+    $csrfToken = admin_get_csrf_token();
+
+    $cottageId = admin_positive_int($_GET['id'] ?? null);
+    if ($cottageId === null) {
+        admin_set_flash('error', 'Invalid cottage id.');
+        admin_redirect_to_page('manage_rooms');
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM Cottages WHERE cottage_id = :id LIMIT 1');
+    $stmt->execute([':id' => $cottageId]);
+    $cottage = $stmt->fetch();
+
+    if (!$cottage) {
+        admin_set_flash('error', 'Cottage not found.');
+        admin_redirect_to_page('manage_rooms');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        admin_require_csrf_token($_POST['csrf_token'] ?? null);
+
+        $result = admin_update_cottage($pdo, $cottageId, $_POST);
+        if ($result['ok']) {
+            admin_set_flash('success', $result['message']);
+            admin_redirect_to_page('manage_rooms');
+        }
+
+        $error = $result['message'];
+        $cottage['cottage_number'] = trim((string)($_POST['cottage_number'] ?? $cottage['cottage_number']));
+        $cottage['type_id'] = $_POST['type_id'] ?? $cottage['type_id'];
+        $cottage['base_price'] = $_POST['base_price'] ?? $cottage['base_price'];
+        $cottage['max_occupancy'] = $_POST['max_occupancy'] ?? $cottage['max_occupancy'];
+        $cottage['status'] = $_POST['status'] ?? $cottage['status'];
+        $cottage['description'] = trim((string)($_POST['description'] ?? $cottage['description']));
+    }
+
+    $types = $pdo->query("SELECT type_id, type_name AS name FROM Cottage_Types ORDER BY type_name ASC")->fetchAll();
+} catch (Throwable $e) {
+    $error = $e->getMessage();
 }
-
-$stmt = $pdo->prepare("SELECT * FROM Cottages WHERE cottage_id = ?");
-$stmt->execute([$cottageId]);
-$cottage = $stmt->fetch();
 
 if (!$cottage) {
-    header('Location: index.php?page=manage_rooms');
-    exit;
-}
-
-$types = $pdo->query("SELECT * FROM Cottage_Types")->fetchAll();
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cottageNumber = trim($_POST['cottage_number'] ?? '');
-    $typeId = $_POST['type_id'] ?? null;
-    $price = $_POST['base_price'] ?? 0;
-    $maxOcc = $_POST['max_occupancy'] ?? 2;
-    $status = $_POST['status'] ?? 'Available';
-    $description = trim($_POST['description'] ?? '');
-
-    if (!$cottageNumber || !$typeId) {
-        $error = 'Please fill in required fields.';
-    } else {
-        try {
-            $stmt = $pdo->prepare("UPDATE Cottages SET cottage_number = ?, type_id = ?, base_price = ?, max_occupancy = ?, status = ?, description = ? WHERE cottage_id = ?");
-            $stmt->execute([$cottageNumber, $typeId, $price, $maxOcc, $status, $description, $cottageId]);
-            header('Location: index.php?page=manage_rooms&msg=updated');
-            exit;
-        } catch (Exception $e) {
-            $error = 'Error: ' . $e->getMessage();
-        }
-    }
+    $cottage = [
+        'cottage_number' => '',
+        'type_id' => '',
+        'base_price' => '0.00',
+        'max_occupancy' => '2',
+        'status' => 'Available',
+        'description' => '',
+    ];
 }
 ?>
 
@@ -58,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="post">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
         <div class="form-group">
             <label class="booknow-label">Cottage Number *</label>
             <input type="text" name="cottage_number" class="booknow-input" value="<?php echo htmlspecialchars($cottage['cottage_number']); ?>" required>
@@ -88,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <option value="Available" <?php echo $cottage['status'] === 'Available' ? 'selected' : ''; ?>>Available</option>
                 <option value="Occupied" <?php echo $cottage['status'] === 'Occupied' ? 'selected' : ''; ?>>Occupied</option>
                 <option value="Maintenance" <?php echo $cottage['status'] === 'Maintenance' ? 'selected' : ''; ?>>Maintenance</option>
+                <option value="Out of Order" <?php echo $cottage['status'] === 'Out of Order' ? 'selected' : ''; ?>>Out of Order</option>
             </select>
         </div>
 

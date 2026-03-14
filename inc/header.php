@@ -134,6 +134,12 @@ $user = $isLoggedIn ? getCurrentUser() : null;
                         </span>
                         <a href="/admin/index.php?page=reports">Reports</a>
                     </li>
+                    <li>
+                        <span>
+                            <img src="/admin/static/img/adminpanel_icons/dollar.svg" alt="">
+                        </span>
+                        <a href="/admin/index.php?page=payments">Payments</a>
+                    </li>
                 </ul>
             </div>
 

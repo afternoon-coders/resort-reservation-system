@@ -1,6 +1,11 @@
 <?php
+require_once __DIR__ . '/../auth/auth_functions.php';
+
+requireLogin();
+requireAdmin();
+
 // Determine which page to load
-$page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+$page = isset($_GET['page']) ? (string)$_GET['page'] : 'dashboard';
 $allowed_pages = ['dashboard', 
                   'add_room', 
                   'edit_room', 
@@ -9,9 +14,10 @@ $allowed_pages = ['dashboard',
                   'rooms',
                   'customers',
                   'reports',
+                  'payments',
                   ];
 
-if (!in_array($page, $allowed_pages)) {
+if (!in_array($page, $allowed_pages, true)) {
     $page = 'dashboard';
 }
 ?>

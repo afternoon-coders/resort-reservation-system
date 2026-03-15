@@ -6,6 +6,8 @@ class ReservationModel extends BaseModel
 {
     protected string $table = 'Reservations';
     protected string $primaryKey = 'reservation_id';
+    private const DEFAULT_CHECKOUT_TIME = '11:00:00';
+    private array $columnExistsCache = [];
 
     public function create(array $data): int
     {
@@ -209,9 +211,9 @@ class ReservationModel extends BaseModel
     }
 
     /**
-     * Automatically updates the statuses of reservations based on the current date.
+     * Automatically updates reservation statuses.
      * - Cancels Pending reservations if the check-in date has passed.
-     * - Checks-out Checked-In reservations if the check-out date has passed.
+     * - Checks-out Checked-In reservations when checkout date reaches the checkout cutoff time.
      */
     public function autoUpdateStatuses(): void
     {
@@ -224,10 +226,76 @@ class ReservationModel extends BaseModel
         $this->pdo->exec($cancelSql);
 
         // 2. Auto-Checkout 
-        // If the user is checked-in and the day of their checkout automatically checkout the guest after a day of their supposedly checkout
-        $checkoutSql = "UPDATE {$this->table} 
-                        SET status = 'Checked-Out' 
-                        WHERE status = 'Checked-In' AND check_out_date < CURDATE()";
+        // Use the guest's real check-in time when available. For legacy rows, fall back to the resort checkout hour.
+        if ($this->hasReservationColumn('checked_in_at')) {
+            $checkoutSql = "UPDATE {$this->table}
+                            SET status = 'Checked-Out'
+                            WHERE status = 'Checked-In'
+                            AND NOW() >= TIMESTAMP(
+                                check_out_date,
+                                COALESCE(TIME(checked_in_at), '" . self::DEFAULT_CHECKOUT_TIME . "')
+                            )";
+        } else {
+            // Backward-compatible fallback for databases that do not yet have checked_in_at.
+            // Payments are recorded at check-in, so payment time is a good proxy when available.
+            $checkoutSql = "UPDATE {$this->table} r
+                            LEFT JOIN (
+                                SELECT reservation_id, MIN(payment_date) AS first_payment_at
+                                FROM Payments
+                                WHERE payment_status = 'Completed'
+                                GROUP BY reservation_id
+                            ) p ON p.reservation_id = r.reservation_id
+                            SET r.status = 'Checked-Out'
+                            WHERE r.status = 'Checked-In'
+                            AND NOW() >= TIMESTAMP(
+                                r.check_out_date,
+                                COALESCE(TIME(p.first_payment_at), '" . self::DEFAULT_CHECKOUT_TIME . "')
+                            )";
+        }
+
         $this->pdo->exec($checkoutSql);
+
+        // 3. Auto-release cottages that no longer have active checked-in reservations.
+        $releaseSql = "UPDATE Cottages c
+                       INNER JOIN Reservation_Items ri ON ri.cottage_id = c.cottage_id
+                       INNER JOIN {$this->table} r ON r.reservation_id = ri.reservation_id
+                       LEFT JOIN (
+                           SELECT DISTINCT ri2.cottage_id
+                           FROM Reservation_Items ri2
+                           INNER JOIN {$this->table} r2 ON r2.reservation_id = ri2.reservation_id
+                           WHERE r2.status = 'Checked-In'
+                       ) active ON active.cottage_id = c.cottage_id
+                       SET c.status = 'Available'
+                       WHERE r.status = 'Checked-Out'
+                       AND c.status = 'Occupied'
+                       AND active.cottage_id IS NULL";
+        $this->pdo->exec($releaseSql);
+    }
+
+    private function hasReservationColumn(string $column): bool
+    {
+        if (array_key_exists($column, $this->columnExistsCache)) {
+            return $this->columnExistsCache[$column];
+        }
+
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT COUNT(*)
+                 FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                 AND TABLE_NAME = :table_name
+                 AND COLUMN_NAME = :column_name"
+            );
+            $stmt->execute([
+                ':table_name' => $this->table,
+                ':column_name' => $column,
+            ]);
+
+            $this->columnExistsCache[$column] = ((int)$stmt->fetchColumn()) > 0;
+        } catch (Throwable $e) {
+            $this->columnExistsCache[$column] = false;
+        }
+
+        return $this->columnExistsCache[$column];
     }
 }

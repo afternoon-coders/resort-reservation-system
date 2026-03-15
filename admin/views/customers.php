@@ -81,7 +81,7 @@ window.onload = function() {
     </div>
     <div class="search-section">
         <div class="search-wrapper">
-        <input type="text" placeholder="Search customers..." class="search-input">
+        <input type="text" id="customerSearch" placeholder="Search customers..." class="search-input">
     </div>
     </div>
     
@@ -145,6 +145,30 @@ window.onload = function() {
         <?php endif; ?>
     </div>
 
+<script>
+const searchInput = document.getElementById("customerSearch");
+const cards = document.querySelectorAll(".customer-card");
+const noResults = document.querySelector(".no-results");
 
+searchInput.addEventListener("keyup", function () {
+    const filter = this.value.toLowerCase();
+    let visible = 0;
+
+    cards.forEach(card => {
+        const name = card.querySelector("h3").textContent.toLowerCase();
+
+        if (name.includes(filter)) {
+            card.style.display = "block";
+            visible++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    if (noResults) {
+        noResults.style.display = filter.length > 0 ? "none" : "block";
+    }
+});
+</script>
 </body>
 </html>

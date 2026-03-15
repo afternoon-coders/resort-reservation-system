@@ -6,6 +6,7 @@ class ReservationModel extends BaseModel
 {
     protected string $table = 'Reservations';
     protected string $primaryKey = 'reservation_id';
+    private const DEFAULT_CHECKIN_TIME = '15:00:00';
     private const DEFAULT_CHECKOUT_TIME = '11:00:00';
     private array $columnExistsCache = [];
 
@@ -16,8 +17,14 @@ class ReservationModel extends BaseModel
 
             $token = bin2hex(random_bytes(32));
 
+            $checkInDateTime = $this->normalizeStayDateTime((string)($data['check_in_date'] ?? ''), self::DEFAULT_CHECKIN_TIME);
+            $checkOutDateTime = $this->normalizeStayDateTime((string)($data['check_out_date'] ?? ''), self::DEFAULT_CHECKOUT_TIME);
+            if (strtotime($checkOutDateTime) <= strtotime($checkInDateTime)) {
+                throw new Exception('Check-out date/time must be after check-in date/time.');
+            }
+
             // Find an available cottage for this type using FOR UPDATE to lock the row
-            $cottageId = $this->getAvailableCottageByType((int)$data['room_id'], $data['check_in_date'], $data['check_out_date'], true);
+            $cottageId = $this->getAvailableCottageByType((int)$data['room_id'], $checkInDateTime, $checkOutDateTime, true);
             
             if (!$cottageId) {
                 throw new Exception("Sorry, there are no cottages of this type available for the chosen dates.");
@@ -28,8 +35,8 @@ class ReservationModel extends BaseModel
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':guest_id' => $data['guest_id'],
-                ':check_in_date' => $data['check_in_date'],
-                ':check_out_date' => $data['check_out_date'],
+                ':check_in_date' => $checkInDateTime,
+                ':check_out_date' => $checkOutDateTime,
                 ':total_amount' => $data['total_amount'] ?? ($data['total'] ?? 0.00),
                 ':status' => $data['status'] ?? 'Pending',
                 ':notes' => $data['notes'] ?? null,
@@ -79,6 +86,9 @@ class ReservationModel extends BaseModel
 
     public function isCottageAvailable(int $cottageId, string $checkIn, string $checkOut): bool
     {
+        $checkInDateTime = $this->normalizeStayDateTime($checkIn, self::DEFAULT_CHECKIN_TIME);
+        $checkOutDateTime = $this->normalizeStayDateTime($checkOut, self::DEFAULT_CHECKOUT_TIME);
+
         $sql = "SELECT COUNT(*) FROM Reservation_Items ri
                 JOIN Reservations r ON ri.reservation_id = r.reservation_id
                 WHERE ri.cottage_id = :cottage_id
@@ -89,14 +99,17 @@ class ReservationModel extends BaseModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':cottage_id' => $cottageId,
-            ':check_in' => $checkIn,
-            ':check_out' => $checkOut
+            ':check_in' => $checkInDateTime,
+            ':check_out' => $checkOutDateTime
         ]);
         return (int)$stmt->fetchColumn() === 0;
     }
 
     public function getAvailableCottageByType(int $typeId, string $checkIn, string $checkOut, bool $lock = false): ?int
     {
+        $checkInDateTime = $this->normalizeStayDateTime($checkIn, self::DEFAULT_CHECKIN_TIME);
+        $checkOutDateTime = $this->normalizeStayDateTime($checkOut, self::DEFAULT_CHECKOUT_TIME);
+
         $sql = "SELECT c.cottage_id 
                 FROM Cottages c
                 WHERE c.type_id = :type_id AND c.status = 'Available'
@@ -118,8 +131,8 @@ class ReservationModel extends BaseModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':type_id' => $typeId,
-            ':check_in' => $checkIn,
-            ':check_out' => $checkOut
+            ':check_in' => $checkInDateTime,
+            ':check_out' => $checkOutDateTime
         ]);
         return $stmt->fetchColumn() ?: null;
     }
@@ -187,8 +200,14 @@ class ReservationModel extends BaseModel
         $params = [':id' => $id];
 
         if (isset($data['guest_id'])) { $fields[] = 'guest_id = :guest_id'; $params[':guest_id'] = $data['guest_id']; }
-        if (isset($data['check_in_date'])) { $fields[] = 'check_in_date = :check_in_date'; $params[':check_in_date'] = $data['check_in_date']; }
-        if (isset($data['check_out_date'])) { $fields[] = 'check_out_date = :check_out_date'; $params[':check_out_date'] = $data['check_out_date']; }
+        if (isset($data['check_in_date'])) {
+            $fields[] = 'check_in_date = :check_in_date';
+            $params[':check_in_date'] = $this->normalizeStayDateTime((string)$data['check_in_date'], self::DEFAULT_CHECKIN_TIME);
+        }
+        if (isset($data['check_out_date'])) {
+            $fields[] = 'check_out_date = :check_out_date';
+            $params[':check_out_date'] = $this->normalizeStayDateTime((string)$data['check_out_date'], self::DEFAULT_CHECKOUT_TIME);
+        }
         if (isset($data['status'])) { $fields[] = 'status = :status'; $params[':status'] = $data['status']; }
         if (isset($data['total_amount'])) { $fields[] = 'total_amount = :total_amount'; $params[':total_amount'] = $data['total_amount']; }
         if (isset($data['notes'])) { $fields[] = 'notes = :notes'; $params[':notes'] = $data['notes']; }
@@ -211,47 +230,29 @@ class ReservationModel extends BaseModel
     }
 
     /**
-     * Automatically updates reservation statuses.
-     * - Cancels Pending reservations if the check-in date has passed.
-     * - Checks-out Checked-In reservations when checkout date reaches the checkout cutoff time.
+     * Automatically updates reservation statuses based on current timestamp.
      */
     public function autoUpdateStatuses(): void
     {
         // 1. Auto-Cancel
-        // Cancel only after the arrival date has fully passed.
-        // Using < CURDATE() prevents same-day arrivals from being auto-cancelled.
+        // Cancel only after the scheduled check-in timestamp has passed and any active confirmation token has expired.
         $cancelSql = "UPDATE {$this->table} 
                       SET status = 'Cancelled' 
-                      WHERE status = 'Pending' AND check_in_date < CURDATE()";
+                      WHERE status = 'Pending'
+                      AND check_in_date < NOW()
+                      AND (token_expires_at IS NULL OR token_expires_at <= NOW())";
         $this->pdo->exec($cancelSql);
 
         // 2. Auto-Checkout 
-        // Use the guest's real check-in time when available. For legacy rows, fall back to the resort checkout hour.
-        if ($this->hasReservationColumn('checked_in_at')) {
-            $checkoutSql = "UPDATE {$this->table}
-                            SET status = 'Checked-Out'
-                            WHERE status = 'Checked-In'
-                            AND NOW() >= TIMESTAMP(
-                                check_out_date,
-                                COALESCE(TIME(checked_in_at), '" . self::DEFAULT_CHECKOUT_TIME . "')
-                            )";
-        } else {
-            // Backward-compatible fallback for databases that do not yet have checked_in_at.
-            // Payments are recorded at check-in, so payment time is a good proxy when available.
-            $checkoutSql = "UPDATE {$this->table} r
-                            LEFT JOIN (
-                                SELECT reservation_id, MIN(payment_date) AS first_payment_at
-                                FROM Payments
-                                WHERE payment_status = 'Completed'
-                                GROUP BY reservation_id
-                            ) p ON p.reservation_id = r.reservation_id
-                            SET r.status = 'Checked-Out'
-                            WHERE r.status = 'Checked-In'
-                            AND NOW() >= TIMESTAMP(
-                                r.check_out_date,
-                                COALESCE(TIME(p.first_payment_at), '" . self::DEFAULT_CHECKOUT_TIME . "')
-                            )";
+        $checkoutSet = "status = 'Checked-Out'";
+        if ($this->hasReservationColumn('checked_out_at')) {
+            $checkoutSet .= ", checked_out_at = COALESCE(checked_out_at, NOW())";
         }
+
+        $checkoutSql = "UPDATE {$this->table}
+                        SET {$checkoutSet}
+                        WHERE status = 'Checked-In'
+                        AND check_out_date <= NOW()";
 
         $this->pdo->exec($checkoutSql);
 
@@ -270,6 +271,25 @@ class ReservationModel extends BaseModel
                        AND c.status = 'Occupied'
                        AND active.cottage_id IS NULL";
         $this->pdo->exec($releaseSql);
+    }
+
+    private function normalizeStayDateTime(string $value, string $defaultTime): string
+    {
+        $raw = trim($value);
+        if ($raw === '') {
+            throw new InvalidArgumentException('Invalid reservation date/time value.');
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) === 1) {
+            return $raw . ' ' . $defaultTime;
+        }
+
+        $parsed = date_create($raw);
+        if ($parsed === false) {
+            throw new InvalidArgumentException('Invalid reservation date/time format.');
+        }
+
+        return $parsed->format('Y-m-d H:i:s');
     }
 
     private function hasReservationColumn(string $column): bool

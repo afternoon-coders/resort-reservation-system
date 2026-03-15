@@ -1201,8 +1201,14 @@ body {
 }
 
 .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
     margin-top: 100px;
-    padding: 12px 25px;
+    gap: 8px;
+    padding: 8px 25px;
     background: var(--primary-color);
     color: #fff;
     border: none;

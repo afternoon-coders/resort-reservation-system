@@ -7,6 +7,8 @@ class RoomModel extends BaseModel
     // Adapted to new schema: Cottages table
     protected string $table = 'Cottages';
     protected string $primaryKey = 'cottage_id';
+    private const DEFAULT_CHECKIN_TIME = '15:00:00';
+    private const DEFAULT_CHECKOUT_TIME = '11:00:00';
 
     public function create(array $data)
     {
@@ -70,6 +72,9 @@ class RoomModel extends BaseModel
 
     public function getAvailableTypes(string $checkIn, string $checkOut)
     {
+        $checkInDateTime = $this->normalizeStayDateTime($checkIn, self::DEFAULT_CHECKIN_TIME);
+        $checkOutDateTime = $this->normalizeStayDateTime($checkOut, self::DEFAULT_CHECKOUT_TIME);
+
         $sql = "SELECT DISTINCT t.type_id, t.type_name as name, t.description, c.base_price, c.max_occupancy
                 FROM Cottages c
                 JOIN Cottage_Types t ON c.type_id = t.type_id
@@ -85,10 +90,29 @@ class RoomModel extends BaseModel
                 )";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':check_in' => $checkIn,
-            ':check_out' => $checkOut
+            ':check_in' => $checkInDateTime,
+            ':check_out' => $checkOutDateTime
         ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function normalizeStayDateTime(string $value, string $defaultTime): string
+    {
+        $raw = trim($value);
+        if ($raw === '') {
+            throw new InvalidArgumentException('Invalid date range input.');
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) === 1) {
+            return $raw . ' ' . $defaultTime;
+        }
+
+        $parsed = date_create($raw);
+        if ($parsed === false) {
+            throw new InvalidArgumentException('Invalid date range format.');
+        }
+
+        return $parsed->format('Y-m-d H:i:s');
     }
 
     public function update(int $id, array $data)

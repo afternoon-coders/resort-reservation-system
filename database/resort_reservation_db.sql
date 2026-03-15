@@ -61,9 +61,10 @@ CREATE TABLE Reservations (
     reservation_id INT PRIMARY KEY AUTO_INCREMENT,
     guest_id INT NOT NULL, -- Points to the person who booked (User or Guest Checkout)
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    check_in_date DATE NOT NULL,
-    check_out_date DATE NOT NULL,
+    check_in_date DATETIME NOT NULL,
+    check_out_date DATETIME NOT NULL,
     checked_in_at DATETIME NULL, -- Actual timestamp when guest was marked Checked-In
+    checked_out_at DATETIME NULL, -- Actual timestamp when guest was marked Checked-Out
     total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     status ENUM('Pending', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled') DEFAULT 'Pending',
     notes TEXT,

@@ -22,13 +22,16 @@ try {
 
     foreach ($guestIds as $i => $gid) {
         $c = $cottages[$i % count($cottages)];
-        $checkIn = $today->modify('+' . ($i + 1) . ' days')->format('Y-m-d');
-        $checkOut = $today->modify('+' . ($i + 3) . ' days')->format('Y-m-d');
+        $checkInDate = $today->modify('+' . ($i + 1) . ' days')->setTime(15, 0, 0);
+        $checkOutDate = $today->modify('+' . ($i + 3) . ' days')->setTime(11, 0, 0);
+        $checkIn = $checkInDate->format('Y-m-d H:i:s');
+        $checkOut = $checkOutDate->format('Y-m-d H:i:s');
+        $checkInDay = $checkInDate->format('Y-m-d');
         $total = ($c['base_price'] ?? 1000) * 2; // two nights
 
         // skip if similar reservation exists (simplified check)
-        $sq = $pdo->prepare('SELECT reservation_id FROM Reservations WHERE guest_id = :gid AND check_in_date = :ci LIMIT 1');
-        $sq->execute([':gid' => $gid, ':ci' => $checkIn]);
+        $sq = $pdo->prepare('SELECT reservation_id FROM Reservations WHERE guest_id = :gid AND DATE(check_in_date) = :ci_day LIMIT 1');
+        $sq->execute([':gid' => $gid, ':ci_day' => $checkInDay]);
         if ($sq->fetch()) continue;
 
         // Insert into Reservations

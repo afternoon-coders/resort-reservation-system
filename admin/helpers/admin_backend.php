@@ -135,6 +135,32 @@ function admin_cottage_statuses(): array
     return ['Available', 'Occupied', 'Maintenance', 'Out of Order'];
 }
 
+function admin_reservations_has_column(PDO $pdo, string $column): bool
+{
+    static $cache = [];
+
+    $cacheKey = spl_object_id($pdo) . ':' . $column;
+    if (array_key_exists($cacheKey, $cache)) {
+        return $cache[$cacheKey];
+    }
+
+    try {
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*)
+             FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+             AND TABLE_NAME = 'Reservations'
+             AND COLUMN_NAME = :column_name"
+        );
+        $stmt->execute([':column_name' => $column]);
+        $cache[$cacheKey] = ((int)$stmt->fetchColumn()) > 0;
+    } catch (Throwable $e) {
+        $cache[$cacheKey] = false;
+    }
+
+    return $cache[$cacheKey];
+}
+
 function admin_dispatch_action(PDO $pdo, string $action, array $input): array
 {
     switch ($action) {
@@ -211,13 +237,30 @@ function admin_dispatch_action(PDO $pdo, string $action, array $input): array
 
 function admin_update_reservation_status(PDO $pdo, int $reservationId, string $status): array
 {
-    $existsStmt = $pdo->prepare('SELECT reservation_id FROM Reservations WHERE reservation_id = :id LIMIT 1');
+    $existsStmt = $pdo->prepare('SELECT reservation_id, status FROM Reservations WHERE reservation_id = :id LIMIT 1');
     $existsStmt->execute([':id' => $reservationId]);
-    if (!$existsStmt->fetchColumn()) {
+    $reservation = $existsStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$reservation) {
         return ['ok' => false, 'message' => 'Reservation not found.'];
     }
 
-    $updateStmt = $pdo->prepare('UPDATE Reservations SET status = :status WHERE reservation_id = :id');
+    $currentStatus = (string)($reservation['status'] ?? '');
+
+    $setFields = ['status = :status'];
+
+    if ($status === 'Checked-In') {
+        if (admin_reservations_has_column($pdo, 'checked_in_at') && $currentStatus !== 'Checked-In') {
+            $setFields[] = 'checked_in_at = NOW()';
+        }
+        if (admin_reservations_has_column($pdo, 'checked_out_at')) {
+            $setFields[] = 'checked_out_at = NULL';
+        }
+    } elseif ($status === 'Checked-Out' && admin_reservations_has_column($pdo, 'checked_out_at')) {
+        $setFields[] = 'checked_out_at = COALESCE(checked_out_at, NOW())';
+    }
+
+    $updateStmt = $pdo->prepare('UPDATE Reservations SET ' . implode(', ', $setFields) . ' WHERE reservation_id = :id');
+
     $updateStmt->execute([
         ':status' => $status,
         ':id' => $reservationId,
@@ -589,8 +632,16 @@ function admin_process_payment(PDO $pdo, array $input): array
             ':transaction_ref' => $transactionRef,
         ]);
 
-        // Update reservation to Checked-In
-        $pdo->prepare("UPDATE Reservations SET status = 'Checked-In' WHERE reservation_id = :id")
+        // Update reservation to Checked-In and keep checkout timestamp fields in sync.
+        $checkInSet = ["status = 'Checked-In'"];
+        if (admin_reservations_has_column($pdo, 'checked_in_at')) {
+            $checkInSet[] = 'checked_in_at = NOW()';
+        }
+        if (admin_reservations_has_column($pdo, 'checked_out_at')) {
+            $checkInSet[] = 'checked_out_at = NULL';
+        }
+
+        $pdo->prepare("UPDATE Reservations SET " . implode(', ', $checkInSet) . " WHERE reservation_id = :id")
             ->execute([':id' => $reservationId]);
 
         // Mark assigned cottages as Occupied

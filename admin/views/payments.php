@@ -69,7 +69,7 @@ try {
         }
         $query .= ")";
     } else {
-        $query .= " AND r.check_in_date = :date";
+        $query .= " AND DATE(r.check_in_date) = :date";
         $params[':date'] = $dateFilter;
     }
 

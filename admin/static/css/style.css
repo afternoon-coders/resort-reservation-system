@@ -404,6 +404,13 @@ select.cancel  {
 
 
 
+
+
+
+
+
+
+
 /* ========================= */
 /* CUSTOMERS PAGE */
 /* ========================= */
@@ -467,7 +474,7 @@ select.cancel  {
 .search-section {
     display: flex;
     width: 100%;
-    padding: 20px 20px;
+    padding: 2px 10px;
 }
 
 
@@ -581,4 +588,487 @@ select.cancel  {
     width: 25px;
     height: 25px;
     padding: 10px 10px;
+}
+
+
+/* ── Stat Cards (consistent with dashboard) ─────────────────── */
+.card-stat {
+    background: #fff;
+    border: 1px solid #e3e6ea;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-stat h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.card-stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-stat-content img {
+    width: 40px;
+    height: 40px;
+    opacity: 0.6;
+}
+
+/* ── Grid Layout ───────────────────────────────────────────── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+/* ── Table Styles ──────────────────────────────────────────── */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e3e6ea;
+}
+
+th {
+    font-weight: 600;
+    color: #666;
+    background: #f8f9fa;
+}
+
+/* ── Action Buttons (consistent with dashboard) ───────────── */
+.action-btn-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.refresh-btn, .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #e7f7ed;
+}
+
+.delete-btn:hover {
+    background: #fdecea;
+}
+
+.refresh-btn img, .delete-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Status Badges (consistent styling) ───────────────────── */
+.badge {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+}
+
+.badge.pending { background: #fef3c7; color: #92400e; }
+.badge.confirm { background: #dbeafe; color: #1e40af; }
+.badge.check-in { background: #d1fae5; color: #065f46; }
+.badge.check-out { background: #f3e8ff; color: #6b21a8; }
+.badge.cancel { background: #fee2e2; color: #991b1b; }
+
+/* ── Muted Text ───────────────────────────────────────────── */
+.muted {
+    color: #666;
+    font-size: 14px;
+}
+
+/* ── Admin Header ─────────────────────────────────────────── */
+.admin-header {
+    margin-bottom: 20px;
+}
+
+.admin-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.admin-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.card {
+    background: #fff;
+    border: 1px solid #e3e6ea;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* ── Form Elements ────────────────────────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Payment CSS */
+
+.btn-primary {
+    padding: 8px 16px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+
+
+/* ── Payment Modal Specific Styles ────────────────────────── */
+.pm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.pm-overlay.open { display: flex; }
+
+.pm-modal {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 480px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
+
+.pm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e3e6ea;
+}
+
+.pm-modal-header h2 { 
+    margin: 0; 
+    font-size: 1.25rem; 
+    font-weight: 600;
+}
+
+.pm-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.pm-modal-close:hover { 
+    background: #f3f4f6;
+    color: #111; 
+}
+
+.pm-summary {
+    background: #f8f9fa;
+    border: 1px solid #e3e6ea;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.pm-summary hr { 
+    border: none; 
+    border-top: 1px solid #dee2e6; 
+    margin: 12px 0; 
+}
+
+.pm-form-group { 
+    margin-bottom: 16px; 
+}
+
+.pm-form-group label { 
+    display: block; 
+    font-weight: 600; 
+    margin-bottom: 6px; 
+    font-size: 14px; 
+    color: #374151;
+}
+
+.pm-form-group input,
+.pm-form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pm-form-group input:focus,
+.pm-form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+.pm-actions { 
+    display: flex; 
+    gap: 12px; 
+    justify-content: flex-end; 
+    margin-top: 24px; 
+    padding-top: 16px;
+    border-top: 1px solid #e3e6ea;
+}
+
+.pm-btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.pm-btn-cancel:hover { 
+    background: #f9fafb; 
+    border-color: #9ca3af;
+}
+
+.pm-btn-pay {
+    padding: 10px 24px;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.pm-btn-pay:hover { 
+    background: #15803d; 
+}
+
+/* ── Payment Table Actions ───────────────────────────────── */
+.take-payment-btn {
+    padding: 6px 14px;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.take-payment-btn:hover { 
+    background: #15803d; 
+}
+
+.take-payment-btn:disabled,
+.take-payment-btn[disabled] {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* ── Status Badges for Payments Page ─────────────────────── */
+.badge-pending { 
+    background: #fef3c7; 
+    color: #92400e; 
+    padding: 4px 10px; 
+    border-radius: 4px; 
+    font-size: 12px; 
+    font-weight: 600;
+    white-space: nowrap; 
+    display: inline-block;
+}
+
+.badge-confirmed { 
+    background: #dbeafe; 
+    color: #1e40af; 
+    padding: 4px 10px; 
+    border-radius: 4px; 
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap; 
+    display: inline-block;
+}
+
+/* ── Filters Section ─────────────────────────────────────── */
+.filter-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-form label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.filter-form input[type="date"],
+.filter-form input[type="text"] {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.filter-form button,
+.filter-form a.btn-secondary {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-form button[type="submit"] {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+}
+
+.filter-form button[type="submit"]:hover {
+    background: #1d4ed8;
+}
+
+.filter-form a.btn-secondary {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.filter-form a.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* ── Alerts ───────────────────────────────────────────────── */
+.alert-error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alert-success {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
 }

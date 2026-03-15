@@ -152,55 +152,54 @@ try {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/style.css">
-<title>Content Management</title>
-<script>
-    function showTab(tab) {
-        const tabs = document.querySelectorAll('.tab-content');
-        tabs.forEach(t => t.style.display = 'none');
-        document.getElementById(tab).style.display = 'block';
-        const buttons = document.querySelectorAll('.tabs button');
-        buttons.forEach(b => b.classList.remove('active'));
-        document.querySelector('.tabs button[data-tab="'+tab+'"]').classList.add('active');
-    }
+    <title>Manage Reservations</title>
+    <script>
+        function showTab(tab) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.style.display = 'none');
+            document.getElementById(tab).style.display = 'block';
+            const buttons = document.querySelectorAll('.tabs button');
+            buttons.forEach(b => b.classList.remove('active'));
+            document.querySelector('.tabs button[data-tab="'+tab+'"]').classList.add('active');
+        }
 
-    // Real-time Search Logic
-    let searchTimeout;
-    function triggerSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const form = document.getElementById('searchForm');
-            const formData = new FormData(form);
-            const params = new URLSearchParams(formData).toString();
+        // Real-time Search Logic
+        let searchTimeout;
+        function triggerSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const form = document.getElementById('searchForm');
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData).toString();
+                
+                // Update URL without reload (optional but good for UX)
+                // history.replaceState(null, '', '?' + params);
+
+                fetch('?' + params, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('reservationTableBody').innerHTML = html;
+                })
+                .catch(err => console.error('Search error:', err));
+            }, 300); // 300ms debounce
+        }
+
+        window.onload = function() {
+            showTab('homepage'); // default
             
-            // Update URL without reload (optional but good for UX)
-            // history.replaceState(null, '', '?' + params);
+            const searchInput = document.querySelector('input[name="search"]');
+            const statusSelect = document.querySelector('select[name="status"]');
 
-            fetch('?' + params, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('reservationTableBody').innerHTML = html;
-            })
-            .catch(err => console.error('Search error:', err));
-        }, 300); // 300ms debounce
-    }
-
-    window.onload = function() {
-        showTab('homepage'); // default
-        
-        const searchInput = document.querySelector('input[name="search"]');
-        const statusSelect = document.querySelector('select[name="status"]');
-
-        if (searchInput) {
-            searchInput.addEventListener('input', triggerSearch);
+            if (searchInput) {
+                searchInput.addEventListener('input', triggerSearch);
+            }
+            if (statusSelect) {
+                statusSelect.addEventListener('change', triggerSearch);
+            }
         }
-        if (statusSelect) {
-            statusSelect.addEventListener('change', triggerSearch);
-        }
-    }
-</script>
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Admin Dashboard</title>
@@ -257,8 +256,14 @@ try {
                             <td><?php echo htmlspecialchars($r['check_in_date']); ?></td>
                             <td><?php echo htmlspecialchars($r['check_out_date']); ?></td>
                             <td>
-                                <div class="badge">
-                                    <?php echo htmlspecialchars($r['status']); ?>
+                                <div class="badge" onchange="updateSelectClass(this)">
+                                    <select name="status" class="badge" onchange="updateSelectClass(this)" style="appearance: none; -webkit-appearance: none;  -moz-appearance: none;">
+                                        <option value="Pending" class="pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
+                                        <option value="Confirmed" class="confirm" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                        <option value="Checked-In" class="check-in" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
+                                        <option value="Checked-Out" class="check-out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
+                                        <option value="Cancelled" class="cancel" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                    </select>
                                 </div>
                             </td>
                             <td>
@@ -268,12 +273,12 @@ try {
                                             <input type="hidden" name="action" value="update_reservation_status">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                            <select name="status" class="badge">
-                                                <option class="pending" value="Pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
-                                                <option class="confirmed" value="Confirmed" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
-                                                <option class="" value="Checked-In" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
-                                                <option value="Checked-Out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
-                                                <option class="cancelled" value="Cancelled" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                            <select name="status" class="badge" onchange="updateSelectClass(this)">
+                                                <option value="Pending" class="pending" <?php echo strtolower($r['status'])==='pending' ? 'selected' : '' ?>>Pending</option>
+                                                <option value="Confirmed" class="confirm" <?php echo strtolower($r['status'])==='confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                                <option value="Checked-In" class="check-in" <?php echo strtolower($r['status'])==='checked-in' || strtolower($r['status'])==='checked_in' ? 'selected' : '' ?>>Checked-In</option>
+                                                <option value="Checked-Out" class="check-out" <?php echo strtolower($r['status'])==='checked-out' || strtolower($r['status'])==='checked_out' ? 'selected' : '' ?>>Checked-Out</option>
+                                                <option value="Cancelled" class="cancel" <?php echo strtolower($r['status'])==='cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                             </select>
                                             <button class="refresh-btn" type="submit">
                                                 <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
@@ -299,6 +304,22 @@ try {
         </div>
 
     </div>
+                        
+    <script>
+        function updateSelectClass(select) {
+            select.classList.remove('pending', 'confirm', 'check-in', 'check-out', 'cancel');
 
+            const value = select.value.toLowerCase();
+            if (value === 'pending')          select.classList.add('pending');
+            else if (value === 'confirmed')   select.classList.add('confirm');
+            else if (value === 'checked-in')  select.classList.add('check-in');
+            else if (value === 'checked-out') select.classList.add('check-out');
+            else if (value === 'cancelled')   select.classList.add('cancel');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('select[name="status"]').forEach(updateSelectClass);
+        });
+    </script>
 </body>
 </html>

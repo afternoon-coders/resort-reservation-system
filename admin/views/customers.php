@@ -83,7 +83,7 @@ window.onload = function() {
         <h3>Search Customers</h3>
         <div class="search-section">
             <div class="search-wrapper">
-            <input type="text" id="customerSearch" placeholder="Search customers..." class="search-input">
+            <input type="text" id="customerSearch" placeholder="Search customers..." class="search-input-customer">
         </div>
         </div>
     </div>

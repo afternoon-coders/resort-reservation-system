@@ -91,124 +91,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="static/css/style.css">
     <title>Payments</title>
-    <style>
-    /* ── Modal overlay ───────────────────────────────────────────── */
-    .pm-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-    .pm-overlay.open { display: flex; }
 
-    .pm-modal {
-        background: #fff;
-        border-radius: 8px;
-        padding: 28px;
-        max-width: 520px;
-        width: 92%;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 8px 32px rgba(0,0,0,.18);
-    }
-    .pm-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 18px;
-    }
-    .pm-modal-header h2 { margin: 0; font-size: 1.2rem; }
-    .pm-modal-close {
-        background: none;
-        border: none;
-        font-size: 1.6rem;
-        cursor: pointer;
-        color: #666;
-        line-height: 1;
-        padding: 0;
-    }
-    .pm-modal-close:hover { color: #111; }
-
-    /* ── Reservation summary inside modal ───────────────────────── */
-    .pm-summary {
-        background: #f8f9fa;
-        border: 1px solid #e3e6ea;
-        border-radius: 6px;
-        padding: 14px 16px;
-        margin-bottom: 18px;
-        font-size: 14px;
-        line-height: 1.75;
-    }
-    .pm-summary hr { border: none; border-top: 1px solid #dee2e6; margin: 8px 0; }
-
-    /* ── Form elements inside modal ─────────────────────────────── */
-    .pm-form-group { margin-bottom: 14px; }
-    .pm-form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
-    .pm-form-group input,
-    .pm-form-group select {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-size: 14px;
-    }
-    .pm-form-group input:focus,
-    .pm-form-group select:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 2px rgba(37,99,235,.15);
-    }
-    .pm-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
-    .pm-btn-cancel {
-        padding: 8px 16px;
-        border: 1px solid #ccc;
-        background: #fff;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .pm-btn-cancel:hover { background: #f3f4f6; }
-    .pm-btn-pay {
-        padding: 8px 20px;
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-    }
-    .pm-btn-pay:hover { background: #1d4ed8; }
-
-    /* ── Table action button ─────────────────────────────────────── */
-    .take-payment-btn {
-        padding: 5px 12px;
-        background: #16a34a;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-    .take-payment-btn:hover { background: #15803d; }
-    .take-payment-btn:disabled,
-    .take-payment-btn[disabled] {
-        background: #d1d5db;
-        color: #9ca3af;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-
-    /* ── Status badges ───────────────────────────────────────────── */
-    .badge-pending   { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
-    .badge-confirmed { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
-    </style>
 </head>
 <body>
     <div class="">
@@ -299,12 +182,11 @@ try {
                         autocomplete="off">
                 </div>
 
-                <button type="submit"
-                        style="padding:7px 16px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;">
+                <button type="submit" class="btn-search">
                     Search
                 </button>
-                <a href="?page=payments"
-                style="padding:7px 14px;border:1px solid #ccc;background:#fff;border-radius:4px;text-decoration:none;color:#333;">
+
+                <a href="?page=payments" class="btn-today">
                     Today
                 </a>
             </form>

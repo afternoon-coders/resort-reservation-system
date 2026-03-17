@@ -165,50 +165,49 @@ if (isLoggedIn()) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+    <?php if ($msg): ?>
+        <div id="msg-popup" class="msg-container <?php echo $msgType; ?>">
+            <div class="msg-icon">
+                <?php if ($msgType === 'success'): ?>
+                    <i class="fa-solid fa-circle-check"></i>
+                <?php else: ?>
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                <?php endif; ?>
+            </div>
+            <div class="msg-content">
+                <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
+                <p><?php echo $msg; ?></p>
+            </div>
+            <button onclick="closeMsg()" style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                margin-left: auto;
+                font-size: 18px;
+                line-height: 1;
+                color: inherit;
+                opacity: 0.6;
+            ">&times;</button>
+        </div>
 
-            
-            <?php if ($msg): ?>
-                <div id="msg-popup" class="msg-container <?php echo $msgType; ?>">
-                    <div class="msg-icon">
-                        <?php if ($msgType === 'success'): ?>
-                            <i class="fa-solid fa-circle-check"></i>
-                        <?php else: ?>
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                        <?php endif; ?>
-                    </div>
-                    <div class="msg-content">
-                        <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
-                        <p><?php echo $msg; ?></p>
-                    </div>
-                    <button onclick="closeMsg()" style="
-                        background: none;
-                        border: none;
-                        cursor: pointer;
-                        margin-left: auto;
-                        font-size: 18px;
-                        line-height: 1;
-                        color: inherit;
-                        opacity: 0.6;
-                    ">&times;</button>
-                </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    closeMsg();
+                }, 5000);
+            });
 
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Auto hide after 5 seconds
-                        setTimeout(() => {
-                            closeMsg();
-                        }, 5000);
-                    });
+            function closeMsg() {
+                const popup = document.getElementById('msg-popup');
+                if (popup) {
+                    popup.style.opacity = '0';
+                    setTimeout(() => popup.style.display = 'none', 400);
+                }
+            }
+        </script>
+    <?php endif; ?>
 
-                    function closeMsg() {
-                        const popup = document.getElementById('msg-popup');
-                        if (popup) {
-                            popup.style.opacity = '0';
-                            setTimeout(() => popup.style.display = 'none', 400);
-                        }
-                    }
-                </script>
-            <?php endif; ?>
     <div class="booknow-container">
         
         <!-- LEFT: BOOKING FORM -->
@@ -479,9 +478,16 @@ if (isLoggedIn()) {
     document.getElementById('reservationForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('submitBtn');
         const btnText = btn.querySelector('.btn-text');
-        
+
         btn.disabled = true;
-        btnText.innerHTML = '<div class="spinner"></div> Creating reservation...';
+        btnText.innerHTML = '<span class="spinner"></span> Creating reservation...';
+
+        // Re-enable button and restore text after 5 seconds
+        // in case of validation errors or slow response
+        setTimeout(() => {
+            btn.disabled = false;
+            btnText.innerHTML = 'Complete Reservation';
+        }, 5000);
     });
 
     // Update check-out min date when check-in changes

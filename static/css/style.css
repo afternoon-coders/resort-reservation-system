@@ -1236,11 +1236,26 @@ body {
     transition: opacity 0.4s ease;
                 
 }
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
 
-@keyframes slideDown {
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* @keyframes slideDown {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
-}
+} */
 
 .msg-icon {
     font-size: 1.5rem;

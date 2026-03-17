@@ -97,7 +97,7 @@
                 <p class="section-subtitle">
                     Book your dream vacation today and discover why Barr Mont Le Paseo is the ultimate island getaway.
                 </p>
-                <a href="index.php?page=rooms" class="btn btn-primary">Reserve Your Room</a>
+                <a href="index.php?page=rooms" class="btn-primary" style="width: 0px; background-color: #026aa0;">Reserve Your Room</a>
             </div>
         </div>
     </section>

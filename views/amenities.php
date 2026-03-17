@@ -23,8 +23,8 @@
     <section class="amenities_section">
         <div class="amenities-container">
             <div class="amenities-grid">
-
                 <!-- ALL AMENITIES -->
+                 
                 <div class="amenity-card-section">
                     <img src="/static/img/amenities/volleyball.svg" alt="" class="">
                     <h3>Volleyball Court</h3>

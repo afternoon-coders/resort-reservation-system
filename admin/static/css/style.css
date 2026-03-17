@@ -41,6 +41,16 @@ header {
     min-height: 100vh;
 }
 
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
 .main-content {
     margin-left: 225px;
     padding: 25px;
@@ -280,7 +290,7 @@ td {
     background-color: transparent;
 }
 
-.delete-btn {
+.delete-cottage-btn {
     height: 40px;
     width: 40px;
     padding: 8px;
@@ -289,7 +299,7 @@ td {
     background-color: transparent;
 }
 
-.delete-btn:hover {
+.delete-cottage-btn:hover {
     background-color: var(--success-color);
 }
 

@@ -163,130 +163,12 @@ if (isLoggedIn()) {
     <title>Complete Your Reservation | La Paseo Resort</title>
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-/* Message Container Refinement */
-.msg-container {
-    padding: 20px 25px;
-    border-radius: 16px;
-    margin-bottom: 30px;
-    display: flex;
-    gap: 15px;
-    animation: slideDown 0.4s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.msg-icon {
-    font-size: 1.5rem;
-    margin-top: 2px;
-}
-
-.msg-content strong {
-    display: block;
-    font-size: 1.1rem;
-    margin-bottom: 4px;
-}
-
-.msg-content p {
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin: 0;
-}
-
-.success { 
-    background: #f0fdf4; 
-    color: #166534; 
-    border: 1px solid #bbf7d0; 
-}
-.error { 
-    background: #fef2f2; 
-    color: #991b1b; 
-    border: 1px solid #fecaca; 
-}
-
-/* Summary Refinement */
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 0.95rem;
-    color: #475569;
-}
-
-.summary-total {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 2px dashed #e2e8f0;
-}
-        
-        .booknow-submit:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .booknow-input:focus, .booknow-select:focus, .booknow-textarea:focus {
-            outline: none;
-            border-color: #007ea7;
-            box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.1);
-            background-color: #fff;
-        }
-
-        .summary-header {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        .secure-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #059669;
-            background: #ecfdf5;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-    </style>
 </head>
 <body>
 
-    <div class="booknow-container">
-        
-        <!-- LEFT: BOOKING FORM -->
-        <div class="booknow-card">
             
             <?php if ($msg): ?>
-                <div class="msg-container <?php echo $msgType; ?>">
+                <div id="msg-popup" class="msg-container <?php echo $msgType; ?>">
                     <div class="msg-icon">
                         <?php if ($msgType === 'success'): ?>
                             <i class="fa-solid fa-circle-check"></i>
@@ -298,8 +180,39 @@ if (isLoggedIn()) {
                         <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
                         <p><?php echo $msg; ?></p>
                     </div>
+                    <button onclick="closeMsg()" style="
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        margin-left: auto;
+                        font-size: 18px;
+                        line-height: 1;
+                        color: inherit;
+                        opacity: 0.6;
+                    ">&times;</button>
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Auto hide after 5 seconds
+                        setTimeout(() => {
+                            closeMsg();
+                        }, 5000);
+                    });
+
+                    function closeMsg() {
+                        const popup = document.getElementById('msg-popup');
+                        if (popup) {
+                            popup.style.opacity = '0';
+                            setTimeout(() => popup.style.display = 'none', 400);
+                        }
+                    }
+                </script>
             <?php endif; ?>
+    <div class="booknow-container">
+        
+        <!-- LEFT: BOOKING FORM -->
+        <div class="booknow-card">
 
             <form method="POST" id="reservationForm">
                 <input type="hidden" name="action" value="reserve">

@@ -1,29 +1,54 @@
 <?php
-require_once __DIR__ . '/../helpers/admin_backend.php';
+require_once '../auth/auth_functions.php';
+require_once '../helpers/DB.php';
+require_once '../inc/csrf.php';
+
+requireLogin();
+requireAdmin();
 
 $error = null;
 $message = '';
 $csrfToken = '';
 try {
-    $pdo = admin_bootstrap();
-    $csrfToken = admin_get_csrf_token();
+    $pdo = DB::getPDO();
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        admin_require_csrf_token($_POST['csrf_token'] ?? null);
+    // Handle admin actions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
+        csrf_verify_or_die();
+        $action = $_POST['action'];
 
-        $action = trim((string)($_POST['action'] ?? ''));
-        $result = admin_dispatch_action($pdo, $action, $_POST);
-        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
+        if ($action === 'update_reservation_status' && !empty($_POST['reservation_id']) && isset($_POST['status'])) {
+            $allowedStatuses = ['Pending', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled'];
+            if (!in_array($_POST['status'], $allowedStatuses)) {
+                $message = 'Invalid status value.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE Reservations SET status = :s WHERE reservation_id = :id');
+                $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['reservation_id']]);
+                $message = 'Reservation status updated.';
+            }
+        }
 
-        admin_redirect_to_page('dashboard');
-    }
+        if ($action === 'delete_reservation' && !empty($_POST['reservation_id'])) {
+            $stmt = $pdo->prepare('DELETE FROM Reservations WHERE reservation_id = :id');
+            $stmt->execute([':id' => (int)$_POST['reservation_id']]);
+            $message = 'Reservation deleted.';
+        }
 
-    $flash = admin_pop_flash();
-    if ($flash !== null) {
-        if (($flash['type'] ?? '') === 'error') {
-            $error = $flash['message'];
-        } else {
-            $message = $flash['message'];
+        if ($action === 'delete_user' && !empty($_POST['user_id'])) {
+            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
+            $stmt->execute([':id' => (int)$_POST['user_id']]);
+            $message = 'User deleted.';
+        }
+
+        if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
+            $allowedRoomStatuses = ['Available', 'Occupied', 'Maintenance'];
+            if (!in_array($_POST['status'], $allowedRoomStatuses)) {
+                $message = 'Invalid room status value.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
+                $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
+                $message = 'Cottage status updated.';
+            }
         }
     }
     
@@ -73,12 +98,11 @@ try {
          ORDER BY u.user_id DESC LIMIT 8"
     )->fetchAll();
 
-} catch (Throwable $e) {
-    $error = $e->getMessage();
-    $roomsTotal = 0;
-    $monthlyReservations = 0;
-    $monthlyGuests = 0;
-    $currentMonthRevenue = 0.0;
+} catch (Exception $e) {
+    error_log('Dashboard error: ' . $e->getMessage());
+    $error = 'An error occurred loading the dashboard.';
+    $roomsTotal = $roomsAvailable = $reservationsTotal = $reservationsPending = $usersTotal = 0;
+    $paymentsTotal = 0.0;
     $recentReservations = [];
     $recentUsers = [];
 }
@@ -145,7 +169,7 @@ window.onload = function() {
                 </div>
             </div>
             <div class="card-stat">
-                    <h2>&#8369; <?php echo number_format($currentMonthRevenue, 2); ?></h2>
+                    <h2>&#8369; <?php echo htmlspecialchars(number_format((float)($monthlyRevenue['revenue'] ?? 0), 2)); ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Current Month Revenue</div>
                     <img src="static/img/adminpanel_icons/dollar.svg" alt="">

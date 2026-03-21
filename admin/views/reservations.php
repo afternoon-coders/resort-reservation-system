@@ -1,5 +1,10 @@
 <?php
-require_once __DIR__ . '/../helpers/admin_backend.php';
+require_once '../auth/auth_functions.php';
+require_once '../helpers/DB.php';
+require_once '../inc/csrf.php';
+
+requireLogin();
+requireAdmin();
 
 $error = null;
 $message = '';
@@ -7,25 +12,45 @@ $csrfToken = '';
 $searchTerm = '';
 $statusFilter = '';
 try {
-    $pdo = admin_bootstrap();
-    $csrfToken = admin_get_csrf_token();
+    $pdo = DB::getPDO();
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        admin_require_csrf_token($_POST['csrf_token'] ?? null);
+    // Handle admin actions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
+        csrf_verify_or_die();
+        $action = $_POST['action'];
 
-        $action = trim((string)($_POST['action'] ?? ''));
-        $result = admin_dispatch_action($pdo, $action, $_POST);
-        admin_set_flash($result['ok'] ? 'success' : 'error', $result['message']);
+        if ($action === 'update_reservation_status' && !empty($_POST['reservation_id']) && isset($_POST['status'])) {
+            $allowedStatuses = ['Pending', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled'];
+            if (!in_array($_POST['status'], $allowedStatuses)) {
+                $message = 'Invalid status value.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE Reservations SET status = :s WHERE reservation_id = :id');
+                $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['reservation_id']]);
+                $message = 'Reservation status updated.';
+            }
+        }
 
-        admin_redirect_to_page('reservations');
-    }
+        if ($action === 'delete_reservation' && !empty($_POST['reservation_id'])) {
+            $stmt = $pdo->prepare('DELETE FROM Reservations WHERE reservation_id = :id');
+            $stmt->execute([':id' => (int)$_POST['reservation_id']]);
+            $message = 'Reservation deleted.';
+        }
 
-    $flash = admin_pop_flash();
-    if ($flash !== null) {
-        if (($flash['type'] ?? '') === 'error') {
-            $error = $flash['message'];
-        } else {
-            $message = $flash['message'];
+        if ($action === 'delete_user' && !empty($_POST['user_id'])) {
+            $stmt = $pdo->prepare('DELETE FROM Users WHERE user_id = :id');
+            $stmt->execute([':id' => (int)$_POST['user_id']]);
+            $message = 'User deleted.';
+        }
+
+        if ($action === 'update_room_status' && !empty($_POST['room_id']) && isset($_POST['status'])) {
+            $allowedRoomStatuses = ['Available', 'Occupied', 'Maintenance'];
+            if (!in_array($_POST['status'], $allowedRoomStatuses)) {
+                $message = 'Invalid room status value.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE Cottages SET status = :s WHERE cottage_id = :id');
+                $stmt->execute([':s' => $_POST['status'], ':id' => (int)$_POST['room_id']]);
+                $message = 'Cottage status updated.';
+            }
         }
     }
 
@@ -149,8 +174,9 @@ try {
         exit;
     }
 
-} catch (Throwable $e) {
-    $error = $e->getMessage();
+} catch (Exception $e) {
+    error_log('Reservations page error: ' . $e->getMessage());
+    $error = 'An error occurred loading reservations.';
     $recentReservations = [];
 }
 ?>

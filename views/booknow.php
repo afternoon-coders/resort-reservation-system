@@ -183,53 +183,27 @@ if (isLoggedIn()) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    <?php if ($msg): ?>
-        <div id="msg-popup" class="msg-container <?php echo $msgType; ?>">
-            <div class="msg-icon">
-                <?php if ($msgType === 'success'): ?>
-                    <i class="fa-solid fa-circle-check"></i>
-                <?php else: ?>
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                <?php endif; ?>
-            </div>
-            <div class="msg-content">
-                <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
-                <p><?php echo $msg; ?></p>
-            </div>
-            <button onclick="closeMsg()" style="
-                background: none;
-                border: none;
-                cursor: pointer;
-                margin-left: auto;
-                font-size: 18px;
-                line-height: 1;
-                color: inherit;
-                opacity: 0.6;
-            ">&times;</button>
-        </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Auto hide after 5 seconds
-                setTimeout(() => {
-                    closeMsg();
-                }, 5000);
-            });
-
-            function closeMsg() {
-                const popup = document.getElementById('msg-popup');
-                if (popup) {
-                    popup.style.opacity = '0';
-                    setTimeout(() => popup.style.display = 'none', 400);
-                }
-            }
-        </script>
-    <?php endif; ?>
 
     <div class="booknow-container">
         
         <!-- LEFT: BOOKING FORM -->
         <div class="booknow-card">
+            
+            <?php if ($msg): ?>
+                <div class="msg-container <?php echo $msgType; ?>">
+                    <div class="msg-icon">
+                        <?php if ($msgType === 'success'): ?>
+                            <i class="fa-solid fa-circle-check"></i>
+                        <?php else: ?>
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        <?php endif; ?>
+                    </div>
+                    <div class="msg-content">
+                        <strong><?php echo $msgType === 'success' ? 'Almost there!' : 'Attention'; ?></strong>
+                        <p><?php echo htmlspecialchars($msg); ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <form method="POST" id="reservationForm">
                 <?php echo csrf_field(); ?>

@@ -7,48 +7,6 @@ if (file_exists(__DIR__ . '/../auth/auth_functions.php')) {
 // Note: Reservation status updates are now handled by a cron job
 // See scripts/cron_update_statuses.php
 
-// Handle profile update POST
-$profileMsg = '';
-$profileMsgType = '';
-if (isset($_POST['action']) && $_POST['action'] === 'update_profile') {
-    if (file_exists(__DIR__ . '/../helpers/UserModel.php')) require_once __DIR__ . '/../helpers/UserModel.php';
-    if (file_exists(__DIR__ . '/../helpers/GuestModel.php')) require_once __DIR__ . '/../helpers/GuestModel.php';
-
-    $userModel = new UserModel();
-    $guestModel = new GuestModel();
-    $currentUser = getCurrentUser();
-    $userdata = $userModel->getById($currentUser['user_id']);
-
-    $firstName   = trim($_POST['first_name'] ?? '');
-    $lastName    = trim($_POST['last_name'] ?? '');
-    $email       = trim($_POST['email'] ?? '');
-    $phoneNumber = trim($_POST['phone_number'] ?? '');
-
-    if (!$firstName || !$lastName || !$email) {
-        $profileMsg = 'First name, last name, and email are required.';
-        $profileMsgType = 'error';
-    } else {
-        try {
-            if (!empty($userdata['guest_id'])) {
-                $guestModel->update((int)$userdata['guest_id'], [
-                    'first_name' => $firstName,
-                    'last_name'  => $lastName,
-                    'email'      => $email,
-                    'phone'      => $phoneNumber,
-                ]);
-            }
-            $userModel->update($currentUser['user_id'], [
-                'email' => $email,
-            ]);
-            $profileMsg = 'Profile updated successfully!';
-            $profileMsgType = 'success';
-        } catch (\Throwable $e) {
-            $profileMsg = 'Error: ' . $e->getMessage();
-            $profileMsgType = 'error';
-        }
-    }
-}
-
 // Check login status
 $isLoggedIn = isLoggedIn();
 $user = $isLoggedIn ? getCurrentUser() : null;

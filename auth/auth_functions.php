@@ -2,13 +2,6 @@
 // Session utilities for authentication
 
 if (session_status() === PHP_SESSION_NONE) {
-    // Harden session cookies for production
-    ini_set('session.cookie_httponly', 1);
-    ini_set('session.cookie_samesite', 'Strict');
-    ini_set('session.use_strict_mode', 1);
-    ini_set('session.use_only_cookies', 1);
-    // Uncomment when SSL is configured:
-    // ini_set('session.cookie_secure', 1);
     session_start();
 }
 
@@ -52,17 +45,15 @@ function requireLogin() {
 function requireAdmin() {
     if (!isAdmin()) {
         header('HTTP/1.1 403 Forbidden');
-        echo 'Access denied: Admin only. Redirecting...';
+        exit('Access denied: Admin only');
         header('Refresh: 1.5; url=/index.php?page=home');
-        exit;
     }
 }
 
 function requireStaff() {
     if (!isStaff() && !isAdmin()) {
         header('HTTP/1.1 403 Forbidden');
-        echo 'Access denied: Staff only. Redirecting...';
+        exit('Access denied: Staff only');
         header('Refresh: 1.5; url=/index.php?page=home');
-        exit;
     }
 }

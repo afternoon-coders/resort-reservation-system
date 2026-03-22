@@ -6,7 +6,9 @@ class ReservationModel extends BaseModel
 {
     protected string $table = 'Reservations';
     protected string $primaryKey = 'reservation_id';
-    protected ?string $last_token = null;
+    private const DEFAULT_CHECKIN_TIME = '15:00:00';
+    private const DEFAULT_CHECKOUT_TIME = '11:00:00';
+    private array $columnExistsCache = [];
 
     public function create(array $data): int
     {

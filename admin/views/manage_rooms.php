@@ -171,7 +171,7 @@
                                 </form>
                             </span>
                             <span>
-                                <div class="action-btn-container">
+                                <div class="manage-room-del-btn">
                                     <form method="post" style="display:inline;"
                                         onclick="event.stopPropagation()"
                                         onsubmit="return confirm('Delete this cottage?');">

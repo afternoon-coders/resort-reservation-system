@@ -118,7 +118,7 @@ tbody {
 }
 
 th,td { 
-    text-align:left; 
+    justify-content: flex-start;
     padding: 8px; 
     border-bottom:1px solid #f0f0f0; 
 }
@@ -130,8 +130,7 @@ td:first-child {
 
 th:last-child,
 td:last-child {
-    width: 8%;
-}
+    width: 8%;}
 
 th:nth-child(2) {
     width: 25%;
@@ -226,16 +225,6 @@ td {
 .badge-maintenance {
     background-color: #fff3cd;
     color: #856404;
-}
-
-/* Action container */
-.action-btn-container {
-    min-width: 100%;
-    min-height: 25px;
-    display: flex;
-    justify-content: flex-start;
-    gap: 2px;
-    padding: 5px 0px;
 }
 
 /* Action button */
@@ -619,8 +608,9 @@ th {
 /* ── Action Buttons (consistent with dashboard) ───────────── */
 .action-btn-container {
     display: flex;
+    width: 100px;
     gap: 0px;
-    align-items: center;
+    margin-right: auto;
 }
 
 .action-btn {
@@ -629,11 +619,42 @@ th {
     gap: 6px;
 }
 
-.refresh-btn, .delete-btn {
+
+.refresh-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+
+    height: 25px;
+    width: 80px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 6px;
+    padding: 2px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.manage-room-del-btn {
+    display: flex;
+    width: 50px;
+    gap: 0px;
+    margin-right: auto;
+}
+
+.delete-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+
+    height: 25px;
+    width: 80px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
     border-radius: 4px;
     transition: background 0.2s;
 }

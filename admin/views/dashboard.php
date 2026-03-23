@@ -128,7 +128,7 @@ window.onload = function() {
                 <h2><?php echo $monthlyReservations; ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Monthly Reservations</div>
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"/></svg>
                 </div>
             </div>
             <div class="card-stat">
@@ -155,7 +155,13 @@ window.onload = function() {
         </div>
 
         <div style="margin-top:20px;" class="card">
-            <h3>Recent Reservations</h3>
+            <div class="row">
+                <h3>Recent Reservations</h3>
+                <button class="refresh-btn" type="submit" style="margin-left: auto; margin-right: 5px;">
+                    <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
+                    update
+                </button>
+            </div>
             <?php if (empty($recentReservations)): ?>
                 <div class="muted">No recent reservations.</div>
             <?php else: ?>
@@ -186,14 +192,12 @@ window.onload = function() {
                             </td>
                             <td>
                                 <div class="action-btn-container">
-                                    <form method="post" style="display:inline-block;margin-right:6px;">
+                                    <form method="post">
                                         <div class="action-btn">
                                             <input type="hidden" name="action" value="update_reservation_status" onchange="updateSelectClass(this)">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                            <button class="refresh-btn" type="submit">
-                                                <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
-                                            </button>
+                                            
                                         </div>
                                     </form>
 
@@ -203,6 +207,7 @@ window.onload = function() {
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                         <button class="delete-btn" type="submit">
                                             <img src="/admin/static/img//adminpanel_icons/delete.svg" alt="">
+                                            delete
                                         </button>
                                     </form>
                                 </div>

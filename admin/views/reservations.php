@@ -236,7 +236,13 @@ try {
         </div>
 
         <div style="margin-top:20px;" class="card">
-            <h3>All Reservations</h3>
+            <div class="row">
+                <h3>All Reservations</h3>
+                <button class="refresh-btn" type="submit" style="margin-left: auto; margin-right: 5px;">
+                    <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
+                    update
+                </button>
+            </div>
             <table id="reservationTable">
                 <thead>
                     <tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Actions</th></tr>
@@ -273,10 +279,6 @@ try {
                                             <input type="hidden" name="action" value="update_reservation_status">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                             <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
-                                            
-                                            <button class="refresh-btn" type="submit">
-                                                <img src="/admin/static/img//adminpanel_icons/refresh.svg" alt="">
-                                            </button>
                                         </div>
                                     </form>
 
@@ -286,6 +288,7 @@ try {
                                         <input type="hidden" name="reservation_id" value="<?php echo (int)$r['reservation_id']; ?>">
                                         <button class="delete-btn" type="submit">
                                             <img src="/admin/static/img/adminpanel_icons/delete.svg" alt="">
+                                            delete
                                         </button>
                                     </form>
                                 </div> 

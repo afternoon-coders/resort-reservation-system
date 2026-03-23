@@ -127,28 +127,28 @@ window.onload = function() {
                 <h2><?php echo $monthlyReservations; ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Monthly Reservations</div>
-                    <img src="static/img/adminpanel_icons/reservation.svg" alt="">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"/></svg>
                 </div>
             </div>
             <div class="card-stat">
-                    <h2><?php echo $roomsTotal; ?></h2>
+                <h2><?php echo $roomsTotal; ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Total Cottages</div>
-                    <img src="static/img/adminpanel_icons/bed.svg" alt="">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5be288"><path d="M80-200v-240q0-27 11-49t29-39v-112q0-50 35-85t85-35h160q23 0 43 8.5t37 23.5q17-15 37-23.5t43-8.5h160q50 0 85 35t35 85v112q18 17 29 39t11 49v240h-80v-80H160v80H80Zm440-360h240v-80q0-17-11.5-28.5T720-680H560q-17 0-28.5 11.5T520-640v80Zm-320 0h240v-80q0-17-11.5-28.5T400-680H240q-17 0-28.5 11.5T200-640v80Zm-40 200h640v-80q0-17-11.5-28.5T760-480H200q-17 0-28.5 11.5T160-440v80Zm640 0H160h640Z"/></svg>
                 </div>
             </div>
             <div class="card-stat">
-                    <h2><?php echo $monthlyGuests; ?></h2>
+                <h2><?php echo $monthlyGuests; ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Guests Booked This Month</div>
-                    <img src="static/img/adminpanel_icons/people.svg" alt="">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5be288"><path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM247-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47Zm466 0q-47 47-113 47-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-8１T5４４−７９２ｑ１４−５　２８−６．５ｔ２８−１．５ｑ６６　０　１１３　４７ｔ４７　１１３ｑ０　６６−４７　１１３ＺＭ１２０−２４０ｈ４８０ｖ−３２ｑ０−１１−５．５−２０Ｔ５８０−３０６ｑ−５４−２７−１０９−４０．５Ｔ３６０−３６０ｑ−５６　０−１１１　１３．５Ｔ１４０−３０６ｑ−９　５−１４．５　１４ｔ−５．５　２０ｖ３２Ｚｍ２９６．５−３４３．５Ｑ４４０−６０７　４４０−６４０ｔ−２３．５−５６．５Ｑ３９３−７２０　３６０−７２０ｔ−５６．５　２３．５Ｑ２８０−６７３　２８₀−６４₀ｔ２₃．₅　₅₆．₅Ｑ₃₂₇−₅₆₀　₃₆₀−₅₆₀ｔ₅₆．₅−₂₃．₅ＺＭ³⁶⁰−₂⁴⁰Ｚｍ⁰−⁴⁰⁰Ｚ"/></svg>
                 </div>
             </div>
             <div class="card-stat">
-                    <h2>&#8369; <?php echo number_format($currentMonthRevenue, 2); ?></h2>
+                <h2>&#8369; <?php echo number_format($currentMonthRevenue, 2); ?></h2>
                 <div class="card-stat-content">
                     <div class="muted">Current Month Revenue</div>
-                    <img src="static/img/adminpanel_icons/dollar.svg" alt="">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"/></svg>
                 </div>
             </div>
         </div>

@@ -16,6 +16,39 @@ function rp_parse_date($value): ?string
     return $raw;
 }
 
+function getDashboardStats(PDO $pdo): array {
+    // Monthly Revenue
+    $monthlyRevenue = (float)($pdo->query(
+        "SELECT COALESCE(SUM(amount_paid), 0)
+         FROM Payments
+         WHERE MONTH(payment_date) = MONTH(CURRENT_DATE())
+         AND YEAR(payment_date) = YEAR(CURRENT_DATE())"
+    )->fetchColumn() ?: 0);
+
+    // Occupancy Rate (Occupied cottages / Total cottages * 100)
+    $totalCottages = (int)$pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
+    $occupiedCottages = (int)$pdo->query("SELECT COUNT(*) FROM Cottages WHERE status = 'Occupied'")->fetchColumn();
+    $occupancyRate = $totalCottages > 0 ? round(($occupiedCottages / $totalCottages) * 100, 1) : 0;
+
+    // Total Bookings (all time)
+    $totalBooking = (int)$pdo->query("SELECT COUNT(*) FROM Reservations")->fetchColumn();
+
+    // Average Stay (in nights)
+    $averageStay = (float)($pdo->query(
+        "SELECT COALESCE(AVG(DATEDIFF(check_out_date, check_in_date)), 0)
+         FROM Reservations
+         WHERE status NOT IN ('Cancelled')"
+    )->fetchColumn() ?: 0);
+    $averageStay = round($averageStay, 1);
+
+    return [
+        'monthlyRevenue' => number_format($monthlyRevenue, 2),
+        'occupancyRate'  => $occupancyRate,
+        'totalBooking'   => $totalBooking,
+        'averageStay'    => $averageStay,
+    ];
+}
+
 function rp_output_csv(string $filename, array $headers, array $rows): void
 {
     if (!headers_sent()) {
@@ -108,6 +141,13 @@ try {
             $message = (string)$flash['message'];
         }
     }
+
+    
+    $stats = getDashboardStats($pdo);
+    $monthlyRevenue = $stats['monthlyRevenue'];
+    $occupancyRate  = $stats['occupancyRate'];
+    $totalBooking   = $stats['totalBooking'];
+    $averageStay    = $stats['averageStay'];
 
     // Summary stats (all-time)
     $roomsTotal = (int)$pdo->query("SELECT COUNT(*) FROM Cottages")->fetchColumn();
@@ -498,6 +538,17 @@ try {
     }
 } catch (Throwable $e) {
     $error = $e->getMessage();
+    $error = $e->getMessage();
+    $roomsTotal = 0;
+    $monthlyReservations = 0;
+    $monthlyGuests = 0;
+    $currentMonthRevenue = 0.0;
+    $monthlyRevenue = '0.00';   // ← add these
+    $occupancyRate  = 0;
+    $totalBooking   = 0;
+    $averageStay    = 0;
+    $recentReservations = [];
+    $recentUsers = [];
 }
 ?>
 <!DOCTYPE html>
@@ -508,229 +559,6 @@ try {
     <title>Reports</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="static/css/style.css">
-    <style>
-        .rp-stack {
-            display: grid;
-            gap: 20px;
-        }
-
-        .rp-grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .rp-card-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .rp-subtle {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .rp-good {
-            color: #157347;
-            font-weight: 600;
-        }
-
-        .rp-bad {
-            color: #b02a37;
-            font-weight: 600;
-        }
-
-        .rp-filter-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-        .rp-filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-width: 160px;
-        }
-
-        .rp-filter-group label {
-            font-size: 0.82rem;
-            color: #4a5568;
-            font-weight: 600;
-        }
-
-        .rp-filter-group input {
-            border: 1px solid #d8dee8;
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-size: 0.9rem;
-            background: #fff;
-        }
-
-        .rp-filter-note {
-            margin-top: 10px;
-        }
-
-        .rp-btn-primary,
-        .rp-btn-secondary,
-        .rp-btn-export {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 8px 12px;
-            line-height: 1;
-        }
-
-        .rp-btn-primary {
-            background: #1a73e8;
-            color: #fff;
-            border-color: #1a73e8;
-        }
-
-        .rp-btn-primary:hover {
-            background: #1564c9;
-            border-color: #1564c9;
-        }
-
-        .rp-btn-secondary {
-            background: #fff;
-            color: #334155;
-            border-color: #cbd5e1;
-        }
-
-        .rp-btn-secondary:hover {
-            background: #f8fafc;
-        }
-
-        .rp-btn-export {
-            background: #ecf5ff;
-            color: #1059b6;
-            border-color: #bfdbfe;
-            white-space: nowrap;
-        }
-
-        .rp-btn-export:hover {
-            background: #dbeafe;
-        }
-
-        .rp-chart-wrap {
-            margin-top: 14px;
-            height: 320px;
-        }
-
-        .rp-table-wrap {
-            overflow-x: auto;
-        }
-
-        .rp-table-wrap table {
-            min-width: 720px;
-        }
-
-        .rp-rank {
-            display: inline-flex;
-            width: 24px;
-            height: 24px;
-            align-items: center;
-            justify-content: center;
-            border-radius: 999px;
-            background: #e7f0ff;
-            color: #1a5ec9;
-            font-weight: 700;
-            font-size: 0.78rem;
-        }
-
-        .rp-meter {
-            width: 100%;
-            height: 7px;
-            background: #edf1f6;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-bottom: 4px;
-        }
-
-        .rp-meter-fill {
-            display: block;
-            height: 100%;
-            background: linear-gradient(90deg, #1a73e8, #47a0ff);
-        }
-
-        .rp-pill {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .rp-pill.badge-neutral {
-            background: #ececec;
-            color: #444;
-        }
-
-        .rp-pill.badge-pending {
-            background: #fce8d5;
-            color: #7d4514;
-        }
-
-        .rp-pill.badge-confirmed {
-            background: #dff2e8;
-            color: #146741;
-        }
-
-        .rp-pill.badge-checkin {
-            background: #d8ecff;
-            color: #0d4f89;
-        }
-
-        .rp-pill.badge-checkout {
-            background: #e3e7ec;
-            color: #334155;
-        }
-
-        .rp-pill.badge-cancelled {
-            background: #fce2e3;
-            color: #8f1d25;
-        }
-
-        .rp-pill.badge-available {
-            background: #daf4df;
-            color: #115d2b;
-        }
-
-        .rp-pill.badge-occupied {
-            background: #ffe4ce;
-            color: #8b3f03;
-        }
-
-        .rp-pill.badge-maintenance {
-            background: #fff6cf;
-            color: #7a5b00;
-        }
-
-        .rp-pill.badge-outoforder {
-            background: #ece5ff;
-            color: #4e3694;
-        }
-
-        @media (max-width: 1200px) {
-            .rp-grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="rp-stack">
@@ -770,30 +598,35 @@ try {
             <p class="rp-subtle rp-filter-note">Active range: <?php echo htmlspecialchars($selectedRangeLabel); ?></p>
         </div>
 
-        <div class="grid">
+        <!-- TODO: addd Monthly Revenue, Occupancy Rate, Total Bookings, Avg. Stay -->
+        <div class="grid" style="margin-top: 0px;">
             <div class="card-stat">
-                <h2><?php echo $roomsTotal; ?></h2>
-                <div class="muted">Total Cottages</div>
+                <h2><?php echo $monthlyRevenue; ?></h2>
+                <div class="card-stat-content">
+                    <div class="muted">Monthly Revenue</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"/></svg>
+                </div>
             </div>
             <div class="card-stat">
-                <h2><?php echo $roomsAvailable; ?></h2>
-                <div class="muted">Available Cottages</div>
+                <h2><?php echo $occupancyRate; ?>%</h2>
+                <div class="card-stat-content">
+                    <div class="muted">Occupancy Rate</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5be288"><path d="M80-200v-240q0-27 11-49t29-39v-112q0-50 35-85t85-35h160q23 0 43 8.5t37 23.5q17-15 37-23.5t43-8.5h160q50 0 85 35t35 85v112q18 17 29 39t11 49v240h-80v-80H160v80H80Zm440-360h240v-80q0-17-11.5-28.5T720-680H560q-17 0-28.5 11.5T520-640v80Zm-320 0h240v-80q0-17-11.5-28.5T400-680H240q-17 0-28.5 11.5T200-640v80Zm-40 200h640v-80q0-17-11.5-28.5T760-480H200q-17 0-28.5 11.5T160-440v80Zm640 0H160h640Z"/></svg>
+                </div>
             </div>
             <div class="card-stat">
-                <h2><?php echo $reservationsTotal; ?></h2>
-                <div class="muted">Total Reservations</div>
+                <h2><?php echo $totalBooking; ?></h2>
+                <div class="card-stat-content">
+                    <div class="muted">Total Bookings</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5be288"><path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM247-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47Zm466 0q-47 47-113 47-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-8１T5４４−７９２ｑ１４−５　２８−６．５ｔ２８−１．５ｑ６６　０　１１３　４７ｔ４７　１１３ｑ０　６６−４７　１１３ＺＭ１２０−２４０ｈ４８０ｖ−３２ｑ０−１１−５．５−２０Ｔ５８０−３０６ｑ−５４−２７−１０９−４０．５Ｔ３６０−３６０ｑ−５６　０−１１１　１３．５Ｔ１４０−３０６ｑ−９　５−１４．５　１４ｔ−５．５　２０ｖ３２Ｚｍ２９６．５−３４３．５Ｑ４４０−６０７　４４０−６４０ｔ−２３．５−５６．５Ｑ３９３−７２０　３６０−７２０ｔ−５６．５　２３．５Ｑ２８０−６７３　２８₀−６４₀ｔ２₃．₅　₅₆．₅Ｑ₃₂₇−₅₆₀　₃₆₀−₅₆₀ｔ₅₆．₅−₂₃．₅ＺＭ³⁶⁰−₂⁴⁰Ｚｍ⁰−⁴⁰⁰Ｚ"/></svg>
+                </div>
             </div>
             <div class="card-stat">
-                <h2><?php echo $reservationsPending; ?></h2>
-                <div class="muted">Pending Reservations</div>
-            </div>
-            <div class="card-stat">
-                <h2><?php echo $usersTotal; ?></h2>
-                <div class="muted">Registered Users</div>
-            </div>
-            <div class="card-stat">
-                <h2>&#8369; <?php echo number_format($paymentsTotal, 2); ?></h2>
-                <div class="muted">Total Completed Payments</div>
+                <h2><?php echo $averageStay; ?> days</h2>
+                <div class="card-stat-content">
+                    <div class="muted">Average Stay</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1a73e8"><path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"/></svg>
+                </div>
             </div>
         </div>
 
@@ -822,7 +655,7 @@ try {
                 <?php endif; ?>
             </div>
 
-            <div class="card">
+            <div class="card" style="padding-bottom: 50px;">
                 <div class="rp-card-head">
                     <h3>Top Performing Rooms</h3>
                     <a class="rp-btn-export" href="<?php echo htmlspecialchars($exportRoomsUrl); ?>">Export CSV</a>
@@ -832,152 +665,19 @@ try {
                     <?php if (empty($topRooms)): ?>
                         <div class="muted">No room performance data available for this range.</div>
                     <?php else: ?>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Cottage</th>
-                                    <th>Type</th>
-                                    <th>Bookings</th>
-                                    <th>Guests</th>
-                                    <th>Booked Gross</th>
-                                    <th>Status</th>
-                                    <th>Performance</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($topRooms as $index => $room): ?>
-                                    <?php
-                                        $roomStatusRaw = strtolower(str_replace(['_', ' '], ['', ''], (string)($room['status'] ?? '')));
-                                        $roomStatusClass = 'badge-neutral';
-                                        if ($roomStatusRaw === 'available') {
-                                            $roomStatusClass = 'badge-available';
-                                        } elseif ($roomStatusRaw === 'occupied') {
-                                            $roomStatusClass = 'badge-occupied';
-                                        } elseif ($roomStatusRaw === 'maintenance') {
-                                            $roomStatusClass = 'badge-maintenance';
-                                        } elseif ($roomStatusRaw === 'outoforder') {
-                                            $roomStatusClass = 'badge-outoforder';
-                                        }
-
-                                        $bookingsCount = (int)($room['bookings_count'] ?? 0);
-                                        $topBookingsMax = max(1, $topBookingsMax ?? 0);
-                                        $performancePercent = ($bookingsCount / $topBookingsMax) * 100;
-                                    ?>
-                                    <tr>
-                                        <td><span class="rp-rank"><?php echo $index + 1; ?></span></td>
-                                        <td><?php echo htmlspecialchars((string)($room['cottage_number'] ?? 'N/A')); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($room['type_name'] ?? 'N/A')); ?></td>
-                                        <td><?php echo $bookingsCount; ?></td>
-                                        <td><?php echo (int)($room['guests_count'] ?? 0); ?></td>
-                                        <td>&#8369; <?php echo number_format((float)($room['gross_revenue'] ?? 0), 2); ?></td>
-                                        <td><span class="rp-pill <?php echo $roomStatusClass; ?>"><?php echo htmlspecialchars((string)($room['status'] ?? 'Unknown')); ?></span></td>
-                                        <td>
-                                            <div class="rp-meter"><span class="rp-meter-fill" style="width: <?php echo number_format($performancePercent, 2, '.', ''); ?>%;"></span></div>
-                                            <small class="rp-subtle"><?php echo number_format($performancePercent, 0); ?>% of top booking volume</small>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
-        <div class="rp-grid-2">
-            <div class="card">
-                <div class="rp-card-head">
-                    <h3>Recent Reservations (Filtered)</h3>
-                    <a class="rp-btn-export" href="<?php echo htmlspecialchars($exportReservationsUrl); ?>">Export CSV</a>
-                </div>
-
-                <div class="rp-table-wrap">
-                    <?php if (empty($recentReservations)): ?>
-                        <div class="muted">No reservations found for this range.</div>
-                    <?php else: ?>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Booking Date</th>
-                                    <th>Guest</th>
-                                    <th>Cottage</th>
-                                    <th>Check-In</th>
-                                    <th>Check-Out</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentReservations as $reservation): ?>
-                                    <?php
-                                        $statusRaw = strtolower(str_replace('_', '-', (string)($reservation['status'] ?? '')));
-                                        $statusClass = 'badge-neutral';
-                                        if ($statusRaw === 'pending') {
-                                            $statusClass = 'badge-pending';
-                                        } elseif ($statusRaw === 'confirmed') {
-                                            $statusClass = 'badge-confirmed';
-                                        } elseif ($statusRaw === 'checked-in') {
-                                            $statusClass = 'badge-checkin';
-                                        } elseif ($statusRaw === 'checked-out') {
-                                            $statusClass = 'badge-checkout';
-                                        } elseif ($statusRaw === 'cancelled') {
-                                            $statusClass = 'badge-cancelled';
-                                        }
-                                    ?>
-                                    <tr>
-                                        <td><?php echo (int)($reservation['reservation_id'] ?? 0); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($reservation['booking_date'] ?? '')); ?></td>
-                                        <td><?php echo htmlspecialchars(trim((string)($reservation['guest_name'] ?? '')) ?: 'Unknown Guest'); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($reservation['cottage_number'] ?? 'N/A')); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($reservation['check_in_date'] ?? '')); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($reservation['check_out_date'] ?? '')); ?></td>
-                                        <td><span class="rp-pill <?php echo $statusClass; ?>"><?php echo htmlspecialchars((string)($reservation['status'] ?? 'Unknown')); ?></span></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="rp-card-head">
-                    <h3>Recent Users (Filtered)</h3>
-                    <a class="rp-btn-export" href="<?php echo htmlspecialchars($exportUsersUrl); ?>">Export CSV</a>
-                </div>
-
-                <div class="rp-table-wrap">
-                    <?php if (empty($recentUsers)): ?>
-                        <div class="muted">No users found for this range.</div>
-                    <?php else: ?>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentUsers as $user): ?>
-                                    <?php
-                                        $fullName = trim((string)($user['first_name'] ?? '') . ' ' . (string)($user['last_name'] ?? ''));
-                                        $displayName = $fullName !== '' ? $fullName : (string)($user['username'] ?? 'Unknown');
-                                        $roleClass = strtolower((string)($user['role'] ?? '')) === 'admin' ? 'badge-checkin' : 'badge-confirmed';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo (int)($user['user_id'] ?? 0); ?></td>
-                                        <td><?php echo htmlspecialchars($displayName); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($user['username'] ?? '')); ?></td>
-                                        <td><?php echo htmlspecialchars((string)($user['account_email'] ?? '')); ?></td>
-                                        <td><span class="rp-pill <?php echo $roleClass; ?>"><?php echo htmlspecialchars((string)($user['role'] ?? 'guest')); ?></span></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                        <?php foreach ($topRooms as $index => $room): ?>
+                            <div class="top-perf-rooms">
+                                <div class="top-perf-room row">
+                                    <div style="display: flex; justify-content: left; align-items: center; width: 60px;"><span class="top-perf-rank"><?php echo $index + 1; ?></span></div>
+                                    <div class="top-perf-info col">
+                                        <div class="top-perf-type"><?php echo htmlspecialchars((string)($room['type_name'] ?? 'N/A')); ?></div>
+                                        <div class="top-perf-cottage"><?php echo htmlspecialchars((string)($room['cottage_number'] ?? 'N/A')); ?></div>
+                                        <div class="top-perf-bookings"><?php echo (int)($room['bookings_count'] ?? 0); ?> bookings</div>
+                                    </div>
+                                    <div class="top-perf-revenue row">₱ <?php echo number_format((float)($room['gross_revenue'] ?? 0), 2); ?></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>

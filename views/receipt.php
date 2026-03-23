@@ -1,7 +1,7 @@
 <?php
-require_once 'helpers/ReservationModel.php';
-require_once 'helpers/UserModel.php';
-require_once 'auth/auth_functions.php';
+require_once __DIR__ . '/../helpers/ReservationModel.php';
+require_once __DIR__ . '/../helpers/UserModel.php';
+require_once __DIR__ . '/../auth/auth_functions.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $token = isset($_GET['token']) ? $_GET['token'] : '';

@@ -1,5 +1,5 @@
 <?php
-require_once 'helpers/RoomModel.php';
+require_once __DIR__ . '/../helpers/RoomModel.php';
 
 // Fetch rooms from database
 $roomModel = new RoomModel();

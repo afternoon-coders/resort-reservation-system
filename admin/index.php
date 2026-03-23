@@ -35,7 +35,7 @@ if (!in_array($page, $allowed_pages, true)) {
         
     <div class="wrapper">
 
-        <?php include '../inc/header.php'; ?>
+        <?php include __DIR__ . '/../inc/header.php'; ?>
 
         <div class="main-content">
             <?php include __DIR__ . "/views/{$page}.php"; ?>

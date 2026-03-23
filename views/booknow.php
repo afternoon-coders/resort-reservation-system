@@ -1,9 +1,9 @@
 <?php
-require_once 'helpers/RoomModel.php';
-require_once 'helpers/GuestModel.php';
-require_once 'helpers/ReservationModel.php';
-require_once 'helpers/UserModel.php';
-require_once 'auth/auth_functions.php';
+require_once __DIR__ . '/../helpers/RoomModel.php';
+require_once __DIR__ . '/../helpers/GuestModel.php';
+require_once __DIR__ . '/../helpers/ReservationModel.php';
+require_once __DIR__ . '/../helpers/UserModel.php';
+require_once __DIR__ . '/../auth/auth_functions.php';
 
 $roomModel = new RoomModel();
 $guestModel = new GuestModel();
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     
                     $reservationDetails = $reservationModel->getById($reservationId);
                     
-                    require_once 'helpers/Mailer.php';
+                    require_once __DIR__ . '/../helpers/Mailer.php';
                     $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token, $reservationDetails);
                     
                     header("Location: index.php?page=receipt&id=$reservationId&token=$token");

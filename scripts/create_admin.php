@@ -1,6 +1,8 @@
 <?php
 // CLI script to create an admin user
-// Usage: php scripts/create_admin.php <username> <email> <password>
+// Usage:
+//   php scripts/create_admin.php <username> <email> <password>
+//   php scripts/create_admin.php <username> <first_name> <last_name> <email> <password>
 
 require_once __DIR__ . '/../helpers/DB.php';
 
@@ -12,19 +14,34 @@ if (php_sapi_name() !== 'cli') {
 $argc = $_SERVER['argc'];
 $argv = $_SERVER['argv'];
 
-if ($argc < 6) {
-    echo "Usage: php scripts/create_admin.php <username> <first_name> <last_name> <email> <password>\n";
+if ($argc !== 4 && $argc !== 6) {
+    echo "Usage:\n";
+    echo "  php scripts/create_admin.php <username> <email> <password>\n";
+    echo "  php scripts/create_admin.php <username> <first_name> <last_name> <email> <password>\n";
     exit(1);
 }
 
 $username = trim($argv[1]);
-$firstName = trim($argv[2]);
-$lastName = trim($argv[3]);
-$email = trim($argv[4]);
-$password = $argv[5];
+$firstName = null;
+$lastName = null;
 
-if ($username === '' || $firstName === '' || $lastName === '' || $email === '' || $password === '') {
-    echo "Username, first name, last name, email and password are required.\n";
+if ($argc === 6) {
+    $firstName = trim($argv[2]);
+    $lastName = trim($argv[3]);
+    $email = trim($argv[4]);
+    $password = $argv[5];
+} else {
+    $email = trim($argv[2]);
+    $password = $argv[3];
+}
+
+if ($username === '' || $email === '' || $password === '') {
+    echo "Username, email and password are required.\n";
+    exit(1);
+}
+
+if ($argc === 6 && ($firstName === '' || $lastName === '')) {
+    echo "First name and last name cannot be empty when provided.\n";
     exit(1);
 }
 
@@ -40,15 +57,46 @@ try {
         exit(1);
     }
 
+    $pdo->beginTransaction();
+
+    $guestId = null;
+    if ($argc === 6) {
+        $guestInsert = $pdo->prepare(
+            'INSERT INTO Guests (first_name, last_name, email) VALUES (:fn, :ln, :e)'
+        );
+        $guestInsert->execute([
+            ':fn' => $firstName,
+            ':ln' => $lastName,
+            ':e' => $email,
+        ]);
+        $guestId = (int)$pdo->lastInsertId();
+    }
+
     $hash = password_hash($password, PASSWORD_BCRYPT);
-    $ins = $pdo->prepare('INSERT INTO Users (username, first_name, last_name, password_hash, account_email, role) VALUES (:u, :fn, :ln, :p, :e, :r)');
-    $ins->execute([':u' => $username, ':fn' => $firstName, ':ln' => $lastName, ':p' => $hash, ':e' => $email, ':r' => 'admin']);
+    $ins = $pdo->prepare(
+        'INSERT INTO Users (guest_id, username, password_hash, account_email, role) VALUES (:gid, :u, :p, :e, :r)'
+    );
+    $ins->execute([
+        ':gid' => $guestId,
+        ':u' => $username,
+        ':p' => $hash,
+        ':e' => $email,
+        ':r' => 'admin',
+    ]);
 
     $id = (int)$pdo->lastInsertId();
-    echo "Admin user created successfully with id: {$id}\n";
-    exit(0);
+    $pdo->commit();
 
+    echo "Admin user created successfully with id: {$id}";
+    if ($guestId !== null) {
+        echo " (guest profile id: {$guestId})";
+    }
+    echo "\n";
+    exit(0);
 } catch (Exception $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
     exit(1);
 }

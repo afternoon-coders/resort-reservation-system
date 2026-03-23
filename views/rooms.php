@@ -26,7 +26,7 @@ $formattedRooms = array_map(function($room) {
         'price' => (int)($room['base_price'] ?? 0),
         'image' => 'static/img/' . strtolower(str_replace(' ', '_', $room['name'] ?? 'cottage')) . '.jpg',
         'description' => $room['description'] ?? 'Beautiful ' . ($room['name'] ?? 'cottage') . ' with premium amenities and stunning views.',
-        'beds' => (int)($room['max_occupancy'] ?? 0)
+        'max_occupancy' => (int)($room['max_occupancy'] ?? 0)
     ];
 }, $uniqueRooms);
 ?>

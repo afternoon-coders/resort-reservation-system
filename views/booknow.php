@@ -121,15 +121,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 if ($reservationId) {
                     $token = $reservationModel->getLastToken();
                     
-                    require_once 'helpers/Mailer.php';
-                    $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token);
+                    $reservationDetails = $reservationModel->getById($reservationId);
                     
-                    $msg = "Reservation submitted! Please check your email (<strong>" . htmlspecialchars($contactEmail) . "</strong>) to confirm your booking.";
-                    if (!$emailSent) {
-                        $msg .= " <br><small>(Note: SMTP is not configured, check logs directory for the mock email)</small>";
-                    }
-                    $msgType = "success";
-                    $selectedRoomTypeId = null;
+                    require_once 'helpers/Mailer.php';
+                    $emailSent = Mailer::sendConfirmationEmail($contactEmail, $fName . ' ' . $lName, $reservationId, $token, $reservationDetails);
+                    
+                    header("Location: index.php?page=receipt&id=$reservationId&token=$token");
+                    exit;
                 } else {
                     $msg = "Failed to create reservation. Please try again.";
                     $msgType = "error";

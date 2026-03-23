@@ -11,7 +11,7 @@ require_once __DIR__ . '/env.php';
 loadEnv(__DIR__ . '/../.env');
 
 class Mailer {
-    public static function sendConfirmationEmail($toEmail, $recipientName, $reservationId, $token) {
+    public static function sendConfirmationEmail($toEmail, $recipientName, $reservationId, $token, $reservationDetails = null) {
         $mail = new PHPMailer(true);
 
         try {
@@ -31,6 +31,24 @@ class Mailer {
             // Content
             $confirmationLink = "http://" . $_SERVER['HTTP_HOST'] . "/auth/confirm_booking.php?token=" . $token;
             
+            $receiptHtml = '';
+            if ($reservationDetails) {
+                $checkIn = date('M j, Y', strtotime($reservationDetails['check_in_date']));
+                $checkOut = date('M j, Y', strtotime($reservationDetails['check_out_date']));
+                $total = number_format($reservationDetails['total_amount'], 2);
+                $roomName = !empty($reservationDetails['items']) ? $reservationDetails['items'][0]['type_name'] : 'Cottage';
+
+                $receiptHtml = "
+                    <div style='background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+                        <h3 style='margin-top: 0; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;'>Reservation Summary</h3>
+                        <p style='margin: 5px 0;'><strong>Room Type:</strong> {$roomName}</p>
+                        <p style='margin: 5px 0;'><strong>Check-in:</strong> {$checkIn}</p>
+                        <p style='margin: 5px 0;'><strong>Check-out:</strong> {$checkOut}</p>
+                        <p style='margin: 15px 0 5px; font-size: 18px; color: #086584;'><strong>Total Amount:</strong> ₱{$total}</p>
+                    </div>
+                ";
+            }
+
             $mail->isHTML(true);
             $mail->Subject = 'Confirm Your Reservation #' . $reservationId;
             $mail->Body    = "
@@ -38,7 +56,8 @@ class Mailer {
                     <h2 style='color: #086584;'>Reservation Confirmation</h2>
                     <p>Dear {$recipientName},</p>
                     <p>Thank you for choosing <strong>Le Paseo Isla Andis Resort</strong>. We have received your booking request (ID: #{$reservationId}).</p>
-                    <p>To finalize and confirm your reservation, please click the button below:</p>
+                    {$receiptHtml}
+                    <p>To finalize and confirm your booking, please click the button below:</p>
                     <div style='text-align: center; margin: 30px 0;'>
                         <a href='{$confirmationLink}' style='background-color: #086584; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>Confirm My Booking</a>
                     </div>

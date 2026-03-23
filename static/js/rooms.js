@@ -14,7 +14,7 @@ function loadRooms() {
                     <h3 class="room-title">${room.name}</h3>
                     <div class="room-price">₱${room.price} / night</div>
                     <p class="room-description">${room.description}</p>
-                    <p class="room-meta">Beds: ${room.beds}</p>
+                    <p class="room-meta">Max Occupancy: ${room.max_occupancy}</p>
                     <div class="button-group">
                         <a href="index.php?page=booknow&room_type_id=${room.room_type_id}" class="book-btn">Book Now</a>
                         <a href="#" class="details-btn">View Details</a>

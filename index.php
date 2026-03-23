@@ -1,4 +1,5 @@
 <?php
+ob_start();
 // Determine which page to load
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
@@ -9,7 +10,8 @@ $allowed_pages = [
     'amenities',
     'gallery',
     'booknow',
-    'contact'
+    'contact',
+    'receipt'
 ];
 
 // Check if the requested page is allowed

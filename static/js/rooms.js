@@ -17,7 +17,7 @@ function loadRooms() {
                     <p class="room-meta">Max Occupancy: ${room.max_occupancy}</p>
                     <div class="button-group">
                         <a href="index.php?page=booknow&room_type_id=${room.room_type_id}" class="book-btn">Book Now</a>
-                        <a href="#" class="details-btn">View Details</a>
+                        
                     </div>
 
                 </div>

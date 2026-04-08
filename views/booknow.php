@@ -212,7 +212,7 @@ if (isLoggedIn()) {
         <div class="booknow-card">
 
             <form method="POST" id="reservationForm">
-                <input type="hidden" name="action" value="reserve">
+                <input type="hidden" name"action" value="reserve">
                 <input type="hidden" name="total_amount" id="totalAmountInput" value="0">
 
                 <div class="booknow-section-title">
